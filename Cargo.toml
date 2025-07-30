@@ -1,17 +1,10 @@
-[package]
-name = "trader"
-version = "0.1.0"
-edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-
-[dependencies]
-cli = {path="./cli"}
 
 [workspace]
 members = [
-"gui/src-tauri/",
+# "gui/src-tauri/",
 "cli",
 "MetaTrader/mt5"
-]
+, "tui"]
+
+resolver = "1"

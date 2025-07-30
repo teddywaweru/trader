@@ -1,0 +1,11 @@
+[package]
+name = "tui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mt5 = {path="../MetaTrader/mt5"}
+crossterm = "0.29.0"
+ratatui = { version = "0.28.0", default-features = false, features = ["crossterm"] }
+strum = "0.27"
+strum_macros = "0.27"

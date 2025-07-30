@@ -14,6 +14,28 @@
 - [] Separate Strategy section so that users can define their own?
 
 
+# TODO:  add following packages:
+1. Color-eyre
+2. iRust
+3. Bacon
+4. Tracing
+5. SQLx
+6. Clap
+    // TODO
+    // Implement args: make request, check response,
+    // Implement query for historical data
+    // Implement query for subscriptions
+    // Implement query for order creation, and tracking
+    // Try implement using Router
+    //
+    //Determine if we are running a tui, gui or cli
+    // Running a cli only for now
+
+    // Check ENV variables to determine the interface and platform to be used.
+    // TODO: Check which platform is going to be used on load
+    run_cli();
+    run_tui();
+    // run_gui();
 
 
   How to add filter parameters to getting all open trades

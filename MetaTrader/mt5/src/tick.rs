@@ -1,4 +1,4 @@
-use crate::{serde_timeframe, Symbol, Timeframe, OHLC};
+use crate::{mt5_bridge::Mt5Bridge, serde_timeframe, Symbol, Timeframe, OHLC};
 use chrono::{prelude::*, Utc};
 use serde::{Deserialize, Deserializer, Serialize};
 
@@ -16,11 +16,10 @@ impl HistoricalTickData {
         let response = "".to_owned();
         let historical_data: Vec<OHLC>;
         let x = HistoricalTickData::from_mt5_response(&response);
+        // let x = Mt5Bridge::get_historical_tick_data()
         format!("stuff, {:#?}", x)
     }
     pub fn from_mt5_response(data: &str) -> Self {
-        use crate::parse;
-        let data = parse::sanitize_mt5_response(data);
         let data =
             serde_json::from_str(&data).expect(&format!("Unable to parse string: \n {data}"));
         data

@@ -1,4 +1,4 @@
-use crate::{parse, serde_order_type};
+use crate::serde_order_type;
 use crate::{OrderType, Symbol};
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -37,7 +37,6 @@ impl Default for OpenTrade {
 }
 impl OpenTrade {
     pub fn from_mt5_response(data: &str) -> Self {
-        let data = parse::sanitize_mt5_response(&data);
         let data = data.replace("'", "\"");
         serde_json::from_str(&data).expect(&format!(
             "Unable to parse string to MT5 OpenTrades Object:\n Received String:\n {}",
@@ -56,7 +55,6 @@ impl Default for OpenTrades {
 }
 impl OpenTrades {
     pub fn parse_mt5_response(data: &str) -> OpenTrades {
-        let data = parse::sanitize_mt5_response(&data);
         serde_json::from_str(&data).expect(&format!(
             "Unable to parse string to MT5 OpenTrades Object:\n Received String:\n {}",
             data

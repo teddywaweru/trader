@@ -1,6 +1,6 @@
 use crate::mt5_bridge::Mt5Bridge;
 use crate::{
-    error::Mt5Error, parse, Account, HistoricalTickDataRequest, Indicator, Symbol, Symbols,
+    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Symbols,
     Timeframe,
 };
 use chrono::{DateTime, Duration, Utc};
@@ -334,7 +334,9 @@ impl Order {
             // let sockets = ConnectionSockets::initialize().unwrap();
             let data = "DATA;GET_SYMBOLS";
             println!("quote_curr: {quote_curr}");
-            let symbols = Symbols::get_symbols().symbols;
+            //
+            //FIX: Source of mt5 string?
+            let symbols = Symbols::get_symbols("mt5").symbols;
             let alt_symbol: &Symbol = symbols
                 .iter()
                 .filter(|symbol| {

@@ -2,12 +2,18 @@
 // Existing trades
 // Tick values
 // Account Info
-use crate::sockets::ConnectionSockets;
+use crate::{
+    account::Account,
+    sockets::ConnectionSockets,
+    symbol::{Symbol, Symbols},
+};
+use tracing;
 // use crate::{
 //     Account, HistoricalTickData, HistoricalTickDataRequest, InstantRates, OpenTrade, Order,
 //     OrderRequest, OrderType, Symbol, Symbols, Timeframe,
 // };
 use chrono::{DateTime, Utc};
+use serde_json::{Map, Value};
 //TRADES
 
 pub struct Mt5Bridge {
@@ -95,69 +101,65 @@ pub struct Mt5Bridge {
 //     }
 // }
 
-// Collect Data Reports
+//  INIT connection sockets
 impl Mt5Bridge {
-    //     // Initialize connection sockets
-    fn init() -> Self {
+    pub fn init() -> Self {
         let sockets = ConnectionSockets::initialize().unwrap();
         Mt5Bridge { sockets }
     }
-    //
-    //     pub fn get_existing_trades() -> Result<String, Box<dyn std::error::Error>> {
-    //         let bridge = Self::init();
-    //         let data = "TRADE;GET_OPEN_TRADES";
-    //         let response = bridge.sockets.request(data, 0).receive();
-    //
-    //         Ok(response)
-    //     }
-    //     pub fn get_instant_rates(symbol: &str) -> String {
-    //         InstantRates::get(&symbol)
-    //     }
-    //     pub fn get_historical_tick_data(
-    //         symbol: &Symbol,
-    //         timeframe: Timeframe,
-    //         start_date: DateTime<Utc>,
-    //         end_date: DateTime<Utc>,
-    //     ) -> HistoricalTickData {
-    //         // let data = request.to_mt5_request();
-    //         let request = format!(
-    //             "DATA;GET_HISTORICAL_DATA;{};{};{};{}",
-    //             symbol.name,
-    //             timeframe as u32,
-    //             start_date.format("%Y.%m.%d %H:%M"),
-    //             end_date.format("%Y.%m.%d %H:%M")
-    //         );
-    //         let bridge = Self::init();
-    //         let response = bridge.sockets.request(&request, 0).receive();
-    //
-    //         let response = HistoricalTickData::from_mt5_response(&response);
-    //
-    //         response
-    // }
-    //
-    //     //ACCOUNT
-    pub fn get_account_info() -> String {
+}
+// Collect Data Reports
+impl Mt5Bridge {
+    pub fn get_existing_trades() -> Result<String, Box<dyn std::error::Error>> {
         let bridge = Self::init();
-        let data = "DATA;GET_ACCOUNT_INFO;";
+        let data = "TRADE;GET_OPEN_TRADES";
+        let response = bridge.sockets.request(data, 0).receive();
+
+        Ok(response)
+    }
+    pub fn get_instant_rates(symbol: &str) -> String {
+        let bridge = Mt5Bridge::init();
+        let data = "DATA; GET_INSTANT_RATES";
 
         let response = bridge.sockets.request(data, 0).receive();
 
-        println!("Account Info received from mt5: {:#?}", response);
+        response
+    }
+    pub fn get_historical_tick_data(
+        symbol: &str,
+        timeframe: u32,
+        start_date: DateTime<Utc>,
+        end_date: DateTime<Utc>,
+    ) -> String {
+        let bridge = Mt5Bridge::init();
+
+        // TODO: Prepare data request
+        let request = format!(
+            "DATA;GET_HISTORICAL_DATA;{};{};{};{}",
+            symbol,
+            timeframe,
+            start_date.format("%Y.%m.%d %H:%M"),
+            end_date.format("%Y.%m.%d %H:%M")
+        );
+        let data = "DATA; GET_INSTANT_RATES";
+
+        let response = bridge.sockets.request(data, 0).receive();
 
         response
     }
-    //     pub fn get_indicator_data(data: &str) -> String {
-    //         todo!()
-    //     }
+
+    pub fn get_indicator_data(data: &str) -> String {
+        todo!()
+    }
     //
-    //     // pub fn mt5_date_from(date: chrono::DateTime<Utc>) -> String {
-    //     //     let date = std::time::Instant::now();
-    //     //     let date = format!("{:#?}", date);
-    //     //     println!("Here's the date: {date}");
-    //     //     todo!()
-    //     //     // let date: String = date.into();
-    //     //     // String::from(date)
-    //     // }
+    pub fn mt5_date_from(date: chrono::DateTime<Utc>) -> String {
+        let date = std::time::Instant::now();
+        let date = format!("{:#?}", date);
+        println!("Here's the date: {date}");
+        todo!()
+        // let date: String = date.into();
+        // String::from(date)
+    }
     // }
     // pub fn get_existing_trades() -> Result<String, Box<dyn std::error::Error>> {
     //     let data = "TRADE;GET_OPEN_TRADES";
@@ -165,4 +167,87 @@ impl Mt5Bridge {
     //     let response = sockets.request(data, 0)?.receive()?;
     //
     //     Ok(response)
+}
+
+//SYMBOLS
+impl Mt5Bridge {
+    pub fn get_symbols() -> Symbols {
+        let data = "DATA;GET_SYMBOLS";
+        let bridge = Self::init();
+        let response = bridge.sockets.request(data, 1).receive();
+
+        // println!("Symbols received from mt5: {:#?}", response);
+
+        bridge.parse_get_symbols(response)
+    }
+    pub fn get_symbol_data(symbol: &str) -> Symbol {
+        let data =format!("DATA;GET_SYMBOL_DATA; {}" ,symbol);
+        let bridge = Self::init();
+        let response = bridge.sockets.request(&data, 1).receive();
+        bridge.parse_get_symbol_data(&response);
+        todo!()
+    }
+}
+
+//ACCOUNT
+impl Mt5Bridge {
+    pub fn get_account_info() -> Account {
+        let bridge = Self::init();
+        let data = "DATA;GET_ACCOUNT_INFO;";
+
+        let response = bridge.sockets.request(data, 0).receive();
+
+        println!("Account Info received from mt5: {:#?}", response);
+
+        // let (request, data) = bridge.sanitize_mt5_response(&response);
+        // bridge.parse_account_info(&data)
+        todo!()
+    }
+}
+
+// PARSER
+impl Mt5Bridge {
+    fn parse_account_info(&self, data: &str) -> Account {
+        todo!()
+    }
+    fn parse_get_symbols(&self, data: String) -> Symbols {
+
+        //NOTE: Data Received Takes the form {"action":"...", "symbols": "..."}
+        let mut data = self.sanitize_mt5_response(&data);
+
+        //NOTE: Removing to avoid cloning. Data is not needed anywhere else.
+        let data = data.remove("Symbols").unwrap();
+        let data = serde_json::from_value::<Vec<String>>(data).unwrap();
+
+        let mut symbols = Symbols::default();
+        for symbol_name in data {
+            let mut symbol = Symbol::default();
+            symbol.name = symbol_name;
+            symbols.symbols.push(symbol);
+        }
+        symbols
+    }
+    fn parse_get_symbol_data(&self, response: &str) -> Symbol {
+        todo!()
+
+    }
+    // Replace single quotations with double for parsing with serde_json
+    // Remove the action key term located in almost every request.
+    fn sanitize_mt5_response(&self, data: &str) -> serde_json::Map<String, Value> {
+        let data = data.replace("'", "\"");
+        let data = serde_json::from_str(&data).expect(&format!(
+            "Unable to parse string to Map<String, Value>\n Received String: \n {}",
+            data
+        ));
+        data
+        // let request = data.get("action").unwrap();
+        // let request = serde_json::to_string(request).unwrap().replace("\"", "");
+        // data.remove("action");
+        // let data = serde_json::to_string(&data).expect(&format!(
+        //     "Unable to parse serde_json Map to String. \n Received Map: \n {:#?}",
+        //     data
+        // ));
+        // panic!("The data string: {:#?}",  data);
+        // (request, data)
+    }
 }

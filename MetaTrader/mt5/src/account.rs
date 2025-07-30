@@ -1,5 +1,4 @@
 use crate::mt5_bridge::Mt5Bridge;
-use crate::parse;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
@@ -48,11 +47,13 @@ impl Account {
         todo!()
     }
     pub fn get_account_info() -> Self {
+
         let data = Mt5Bridge::get_account_info();
-        Self::parse_mt5_response(&data)
+
+            data
+
     }
     pub fn parse_mt5_response(data: &str) -> Account {
-        let data = parse::sanitize_mt5_response(&data);
 
         let account = match serde_json::from_str(&data) {
             Ok(account) => account,

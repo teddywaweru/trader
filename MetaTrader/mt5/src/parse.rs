@@ -7,21 +7,6 @@ fn parse_trade(data: String) -> Result<Order, serde_json::Error> {
     let order: Order = serde_json::from_str(&data)?;
     Ok(order)
 }
-/// Replace single quotations with double for parsing with serde_json
-/// Remove the action key term located in almost every request.
-pub fn sanitize_mt5_response(data: &str) -> String {
-    let data = data.replace("'", "\"");
-    let mut data: Map<String, Value> = serde_json::from_str(&data).expect(&format!(
-        "Unable to parse string to Map<String, Value>\n Received String: \n {}",
-        data
-    ));
-    data.remove("action");
-    let data = serde_json::to_string(&data).expect(&format!(
-        "Unable to parse serde_json Map to String. \n Received Map: \n {:#?}",
-        data
-    ));
-    data
-}
 fn parse_price_data(data: String) -> Result<InstantRates, serde_json::Error> {
     let mut instant_rates: Map<String, Value> = serde_json::from_str(&data)?;
     instant_rates.remove("action");

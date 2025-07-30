@@ -1,4 +1,4 @@
-use crate::{parse, serde_order_type_filling, OrderTypeFilling};
+use crate::{mt5_bridge::Mt5Bridge, serde_order_type_filling, OrderTypeFilling};
 use serde::{
     de::{self, Visitor},
     Deserialize, Serialize,
@@ -15,6 +15,7 @@ pub struct Symbol {
     #[serde(with = "serde_order_type_filling")]
     pub type_filling: OrderTypeFilling,
 }
+
 impl Default for Symbol {
     fn default() -> Self {
         let name = "EURUSD_default".to_string();
@@ -39,7 +40,6 @@ impl Default for Symbol {
 }
 impl Symbol {
     pub fn parse_mt5_response(data: &str) -> Self {
-        let data = parse::sanitize_mt5_response(&data);
 
         let symbol = match serde_json::from_str(&data) {
             Ok(symbol) => symbol,
@@ -50,6 +50,17 @@ impl Symbol {
         println!("Symbol Received from mt5: {:#?}", symbol);
 
         symbol
+    }
+    pub fn get_symbol_data(bridge: &str, symbol: &str) -> Self {
+        match bridge {
+            "mt5" => {
+                Mt5Bridge::get_symbol_data(symbol);
+            }
+            &_ => {}
+
+        }
+        todo!()
+
     }
 }
 
@@ -69,28 +80,16 @@ impl Symbols {
     fn new() -> Self {
         Symbols { symbols: vec![] }
     }
-    pub fn parse_mt5_response(data: &str) -> Self {
-        let data = parse::sanitize_mt5_response(&data);
-        let mut data: Symbols = match serde_json::from_str(&data) {
-            Ok(data) => data,
-            Err(e) => {
-                panic!("Unable to parse string to Symbols object. \n Received String: \n {data} \n Error: {e}")
+
+    pub fn get_symbols(bridge: &str) -> Self {
+        match bridge {
+            "mt5" => {
+           Mt5Bridge::get_symbols()
+            },
+            &_ => {
+                todo!()
             }
-        };
-
-        data.order_symbols()
-    }
-
-    pub fn get_symbols() -> Self {
-        todo!()
-    }
-
-    fn order_symbols(&mut self) -> Self {
-        let ordered_symbols = Symbols::new();
-
-        self.symbols.sort_by_key(|symbol| symbol.name.clone());
-
-        std::mem::take(self)
+        }
     }
 }
 

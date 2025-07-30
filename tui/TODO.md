@@ -10,7 +10,7 @@ Only charts to implement will involve performance. Charts on commodities may not
 
    -[] Which platforms are accessible? 
 - [] Calculation of trade details?
-    -[] Data needed:
+    - [] Data needed:
         - [] Symbol
         - [] Account balance
         - [] 

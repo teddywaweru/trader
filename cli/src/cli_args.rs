@@ -17,6 +17,9 @@ pub struct Args {
     pub subcmd: SubArgs,
 }
 impl Args {
+    pub fn init() {
+        Args::parse().run();
+    }
     pub fn run(self) {
         match self.subcmd {
             SubArgs::RunAlgo => {
@@ -72,7 +75,7 @@ impl Args {
                 let response = Order::new_order(order_request);
             }
             SubArgs::ExecuteOtherTrade { kind } => todo!(),
-            SubArgs::OtherThing { password } => todo!(),
+            SubArgs::GetSymbols { password } => todo!(),
             SubArgs::NewOtherThing { username } => todo!(),
             SubArgs::TrackPrices => {
                 let data = "TRACK_PRICES";
@@ -95,7 +98,7 @@ impl Args {
 #[derive(Subcommand)]
 pub enum SubArgs {
     // #[arg(short, long, default_value_t = 1)]
-    OtherThing {
+    GetSymbols {
         password: String,
     },
     NewOtherThing {

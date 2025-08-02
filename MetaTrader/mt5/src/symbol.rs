@@ -51,15 +51,15 @@ impl Symbol {
 
         symbol
     }
-    pub fn get_symbol_data(bridge: &str, symbol: &str) -> Self {
+    pub fn get_symbol_data(bridge: &str, symbol: &str) -> Symbol {
         match bridge {
             "mt5" => {
-                Mt5Bridge::get_symbol_data(symbol);
+                Mt5Bridge::get_symbol_data(symbol)
             }
-            &_ => {}
-
+            &_ => {
+                todo!()
+            }
         }
-        todo!()
 
     }
 }

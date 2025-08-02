@@ -57,15 +57,15 @@ int get_action(string& scope, string& request)
 
    /* Process Messages */
    if(scope == "DATA" && request == "GET_ACCOUNT_INFO")
+   Print("Triggered at GET_SYMBOL_DATA");
    
       switch_action = 1;
-      
-   if(scope == "DATA" && request == "GET_SYMBOL_INFO")
-   
+
+   if(scope == "DATA" && request == "GET_SYMBOLS")
       switch_action = 2;
-
-
-
+      
+   if(scope == "DATA" && request == "GET_SYMBOL_DATA")
+      switch_action = 3;
 
    if(scope == "TRADE" && request == "OPEN")
       // 1) Trading Message Structure
@@ -100,8 +100,6 @@ int get_action(string& scope, string& request)
       switch_action = 8;
 
 
-   if(scope == "DATA" && request == "GET_SYMBOLS")
-      switch_action = 11;
 
    return switch_action;
   }

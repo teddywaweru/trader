@@ -63,17 +63,24 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
 
          break;
 
-
       case 2:
-         Print("Getting Symbol Info");
-
-         zmq_ret = "{'action': 'GET_SYMBOL_INFO',";
-         GetSymbolInfo(zmq_ret, compArray[2]);
+         Print("Getting Symbols");
+         zmq_ret = "{'action': 'GET_SYMBOLS',";
+         GetSymbols(zmq_ret);
          zmq_ret += "}";
 
          break;
 
       case 3:
+         Print("Getting Symbol Data");
+
+         zmq_ret = "{'action': 'GET_SYMBOL_DATA',";
+         GetSymbolData(zmq_ret, compArray[2]);
+         zmq_ret += "}";
+
+         break;
+
+      case 4:
         {
          Print("Opening New Trade");
 
@@ -118,16 +125,11 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
 
          break;
 
-      case 9:
 
-      case 11:
+      case 10:
+         Print("Getting Info for Symbol");
+         zmq_ret = "{'action': 'GET_SYMBOL_DATA',";
 
-         zmq_ret = "{'action': 'GET_SYMBOLS',";
-         GetSymbols(zmq_ret);
-
-		 zmq_ret += "}";
-
-         break;
 
       default:
          zmq_ret = "{NO DATA}";
@@ -177,12 +179,28 @@ void GetAccountInfo(string &zmq_ret)
 
   }
 //+------------------------------------------------------------------+
+void GetSymbols(string &zmq_ret)
+  {
+   zmq_ret += "'symbols': [";
+   int symbol_total = SymbolsTotal(true);
 
+   for(int i = 0; i < symbol_total - 1; i++)
+     {
+      zmq_ret += "'"  + SymbolName(i, true) + "'";
+      if(i != symbol_total -2)
+        {
+         zmq_ret += ",";
+        }
+     }
+   zmq_ret += "]";
+
+  }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void GetSymbolInfo(string &zmq_ret, string &symbol)
+void GetSymbolData(string &zmq_ret, string &symbol)
   {
+   zmq_ret += "'symbol_data': {";
    zmq_ret += "'name':'" + symbol + "'";
    zmq_ret += ", 'sector':'" + SymbolInfoString(symbol, SYMBOL_SECTOR_NAME) + "'";
    zmq_ret += ", 'spread':" + (string)SymbolInfoInteger(symbol, SYMBOL_SPREAD);
@@ -191,28 +209,9 @@ void GetSymbolInfo(string &zmq_ret, string &symbol)
    zmq_ret += ", 'ask':" + (string)SymbolInfoDouble(symbol, SYMBOL_ASK) + "";
    zmq_ret += ", 'tick_value':" + (string)SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE) + "";
    zmq_ret += ", 'type_filling': " + (string)SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE) + "";
+   zmq_ret += "}";
   }
 //+------------------------------------------------------------------+
-
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void GetSymbols(string &zmq_ret)
-  {
-   int count = SymbolsTotal(false);
-   zmq_ret += "'symbols': [";
-   for(int i = 0; i < count; i++)
-     {
-	   zmq_ret += "{";
-       GetSymbolInfo(zmq_ret, SymbolName(i, false));
-
-	   zmq_ret += "}";
-	   if (i != count -1) {
-	   zmq_ret += ",";
-	   }
-     }
-	 zmq_ret += "]";
-  }
 
 
 //+------------------------------------------------------------------+

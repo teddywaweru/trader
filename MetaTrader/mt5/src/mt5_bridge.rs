@@ -7,7 +7,6 @@ use crate::{
     sockets::ConnectionSockets,
     symbol::{Symbol, Symbols},
 };
-use tracing;
 // use crate::{
 //     Account, HistoricalTickData, HistoricalTickDataRequest, InstantRates, OpenTrade, Order,
 //     OrderRequest, OrderType, Symbol, Symbols, Timeframe,
@@ -181,11 +180,10 @@ impl Mt5Bridge {
         bridge.parse_get_symbols(response)
     }
     pub fn get_symbol_data(symbol: &str) -> Symbol {
-        let data =format!("DATA;GET_SYMBOL_DATA; {}" ,symbol);
+        let data = format!("DATA;GET_SYMBOL_DATA;{}", symbol);
         let bridge = Self::init();
         let response = bridge.sockets.request(&data, 1).receive();
-        bridge.parse_get_symbol_data(&response);
-        todo!()
+        bridge.parse_get_symbol_data(&response)
     }
 }
 
@@ -211,12 +209,11 @@ impl Mt5Bridge {
         todo!()
     }
     fn parse_get_symbols(&self, data: String) -> Symbols {
-
         //NOTE: Data Received Takes the form {"action":"...", "symbols": "..."}
         let mut data = self.sanitize_mt5_response(&data);
 
         //NOTE: Removing to avoid cloning. Data is not needed anywhere else.
-        let data = data.remove("Symbols").unwrap();
+        let data = data.remove("symbols").unwrap();
         let data = serde_json::from_value::<Vec<String>>(data).unwrap();
 
         let mut symbols = Symbols::default();
@@ -227,9 +224,12 @@ impl Mt5Bridge {
         }
         symbols
     }
-    fn parse_get_symbol_data(&self, response: &str) -> Symbol {
-        todo!()
+    fn parse_get_symbol_data(&self, data: &str) -> Symbol {
+        println!("Response back:: {data}");
+        let mut data = self.sanitize_mt5_response(&data);
 
+        let data = data.remove("symbol_data").unwrap();
+        serde_json::from_value::<Symbol>(data).unwrap()
     }
     // Replace single quotations with double for parsing with serde_json
     // Remove the action key term located in almost every request.

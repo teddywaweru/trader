@@ -52,7 +52,7 @@ void OpenNewTrade( MqlTradeRequest &request, string& zmq_ret)
 //  };
 
    zmq_ret += " 'ticket': " + (string)request.order + ", " + "'magic': " + (string)request.magic + ", 'symbol':{";
-   GetSymbolInfo(zmq_ret, PositionGetSymbol((uint)request.order) );
+   GetSymbolData(zmq_ret, PositionGetSymbol((uint)request.order) );
    zmq_ret += "}";
    
    zmq_ret += ", 'volume': " + (string)request.volume + ", 'trade_type': "+ (string)request.type;

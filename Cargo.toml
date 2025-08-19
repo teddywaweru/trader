@@ -4,7 +4,8 @@
 members = [
 # "gui/src-tauri/",
 "cli",
-"MetaTrader/mt5"
-, "tui"]
+"MetaTrader/mt5",
+"algo",
+"tui"]
 
 resolver = "1"

@@ -1,4 +1,4 @@
-use mt5::{self, Symbol, Symbols};
+use mt5::{self, Order, OrderRequest, Symbol, Symbols};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     prelude::{Buffer, Line, Rect, Text},
@@ -14,26 +14,45 @@ impl Default for CalculatorWidget {
 }
 impl CalculatorWidget {
     fn render_first_calculator(area: Rect, buf: &mut Buffer) {
-        // let account = mt5::Account::get_account_info();
+        let account = mt5::Account::get_account_info();
 
-        //FIX: Source of mt5 string?
+        //FIX: Source of mt5 bridge string?
         let bridge = "mt5";
         let symbols = Symbols::get_symbols(bridge);
         let title = Line::from("Calculator");
 
         //FIX: Source of Symbol String?
-        let symbol = Symbol::get_symbol_data(bridge, "EURUSD");
+        let symbol = Symbol::get_symbol_data(bridge, "CHFJPY");
 
-        let symbol_text =
-            Text::from_iter([symbol.name, symbol.sector, String::from(symbol.spread.to_string())]);
+        // FIX: Source of Timeframe, start and end date
+        let hist_tick_data = symbol.get_historical_tick_data(bridge, "16408", 0, 15);
+
+        let ticks = &hist_tick_data.ticks;
+
+        let atr = algo::calculate_atr(ticks) / symbol.point as f32 / 10.0;
+
+        let order_request = OrderRequest {
+            account,
+            order_type: mt5::OrderType::OrderTypeBuy,
+            symbol,
+            risk: 0.02,
+        };
+        // let order_request =  OrderRequest::from(Order::new_order(order_request));
+
+        let symbol_text = Text::from_iter([
+            symbol.name,
+            symbol.sector,
+            String::from(symbol.spread.to_string()),
+        ]);
         Paragraph::new(symbol_text);
         let calculator_block = Block::bordered()
             .title(title)
             .title_alignment(Alignment::Center);
 
         let calculator_text = Line::from("Some text");
+        let x = format!("{:?}", hist_tick_data);
 
-        let text = Text::from_iter([calculator_text]);
+        let text = Text::from_iter([x]);
         Paragraph::new(text)
             .block(calculator_block)
             .render(area, buf);
@@ -62,12 +81,12 @@ impl Widget for CalculatorWidget {
         Self: Sized,
     {
         let layout_constraints = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
-        let inner_layout = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints(layout_constraints)
-            .split(area);
+        // let inner_layout = Layout::default()
+        //     .direction(Direction::Horizontal)
+        //     .constraints(layout_constraints)
+        //     .split(area);
 
-        CalculatorWidget::render_first_calculator(inner_layout[0], buf);
-        CalculatorWidget::render_second_calculator(inner_layout[1], buf);
+        CalculatorWidget::render_first_calculator(area, buf);
+        // CalculatorWidget::render_second_calculator(inner_layout[1], buf);
     }
 }

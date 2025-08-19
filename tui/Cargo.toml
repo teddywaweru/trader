@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 mt5 = {path="../MetaTrader/mt5"}
+algo = {path="../algo"}
 crossterm = "0.29.0"
 ratatui = { version = "0.28.0", default-features = false, features = ["crossterm"] }
 strum = "0.27"

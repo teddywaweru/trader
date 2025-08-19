@@ -1,7 +1,4 @@
-use crate::{
-    mt5_bridge::Mt5Bridge, serde_order_type_filling, HistoricalTickData, OrderTypeFilling,
-    Timeframe,
-};
+use crate::{mt5_bridge::Mt5Bridge, serde_order_type_filling, OrderTypeFilling};
 use serde::{
     de::{self, Visitor},
     Deserialize, Serialize,
@@ -43,6 +40,7 @@ impl Default for Symbol {
 }
 impl Symbol {
     pub fn parse_mt5_response(data: &str) -> Self {
+
         let symbol = match serde_json::from_str(&data) {
             Ok(symbol) => symbol,
             Err(e) => {
@@ -55,25 +53,14 @@ impl Symbol {
     }
     pub fn get_symbol_data(bridge: &str, symbol: &str) -> Symbol {
         match bridge {
-            "mt5" => Mt5Bridge::get_symbol_data(symbol),
+            "mt5" => {
+                Mt5Bridge::get_symbol_data(symbol)
+            }
             &_ => {
                 todo!()
             }
         }
-    }
-    pub fn get_historical_tick_data(
-        &self,
-        bridge: &str,
-        timeframe: &str,
-        start: u32,
-        end: u32,
-    ) -> HistoricalTickData {
-        match bridge {
-            "mt5" => {
-                Mt5Bridge::get_historical_tick_data(&self.name, timeframe, start, end)
-            }
-            _ => todo!()
-        }
+
     }
 }
 
@@ -96,7 +83,9 @@ impl Symbols {
 
     pub fn get_symbols(bridge: &str) -> Self {
         match bridge {
-            "mt5" => Mt5Bridge::get_symbols(),
+            "mt5" => {
+           Mt5Bridge::get_symbols()
+            },
             &_ => {
                 todo!()
             }

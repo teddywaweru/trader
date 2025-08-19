@@ -80,7 +80,17 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
 
          break;
 
-      case 4:
+	  case 4: 
+         Print("Getting Historical Tick Data");
+
+         zmq_ret = "{'action': 'GET_HISTORICAL_DATA',";
+         GetSymbolHistData(compArray, zmq_ret);
+
+         zmq_ret += "}";
+
+break;
+
+      case 5:
         {
          Print("Opening New Trade");
 
@@ -219,16 +229,23 @@ void GetSymbolData(string &zmq_ret, string &symbol)
 //+------------------------------------------------------------------+
 void GetSymbolHistData(string& compArray[], string& zmq_ret)
   {
+   Print("Value of compArray[5]", compArray[5]);
+   Print("Value of compArray[4]", compArray[4]);
    Print("Value of compArray[3]", compArray[3]);
    Print("Value of compArray[2]", compArray[2]);
 
    MqlRates rates[];
 
-   int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)compArray[3], StringToTime(compArray[4]), StringToTime(compArray[5]), rates);
+int timeframe = (int)(StringToInteger(compArray[3]));
+//set as hex value;
+
+   //int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]), StringToTime(compArray[4]), StringToTime(compArray[5]), rates);
+   int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]) , StringToInteger(compArray[4]), StringToInteger(compArray[5]), rates);
    if(rates_count < 0)
       return;
 
-   zmq_ret += "'timeframe': " + (string)(ENUM_TIMEFRAMES)compArray[3] + ",";
+   //zmq_ret += "'timeframe': '" + (string)(ENUM_TIMEFRAMES)compArray[3] + "',";
+   zmq_ret += "'timeframe': '" + "D1',";
 
    zmq_ret += "'ticks': [";
 

@@ -67,6 +67,10 @@ int get_action(string& scope, string& request)
    if(scope == "DATA" && request == "GET_SYMBOL_DATA")
       switch_action = 3;
 
+   if(scope == "DATA" && request == "GET_HISTORICAL_DATA")
+      // 2.2) DATA|SYMBOL|TIMEFRAME|START_DATETIME|END_DATETIME
+      switch_action = 4;
+
    if(scope == "TRADE" && request == "OPEN")
       // 1) Trading Message Structure
       // TRADE|ACTION|TYPE |SYMBOL|PRICE|SL|TP|COMMENT          |TICKET
@@ -83,6 +87,7 @@ int get_action(string& scope, string& request)
    if(scope == "TRADE" && request == "CLOSE")
       switch_action = 3;
 
+
    if(scope == "TRADE" && request == "CLOSE_PARTIAL")
       switch_action = 4;
 
@@ -95,9 +100,6 @@ int get_action(string& scope, string& request)
    if(scope == "TRADE" && request == "GET_OPEN_TRADES")
       switch_action = 7;
 
-   if(scope == "DATA" && request == "GET_HISTORICAL_DATA")
-      // 2.2) DATA|SYMBOL|TIMEFRAME|START_DATETIME|END_DATETIME
-      switch_action = 8;
 
 
 

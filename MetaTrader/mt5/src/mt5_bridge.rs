@@ -4,8 +4,12 @@
 // Account Info
 use crate::{
     account::Account,
+    ohlc::OHLC,
     sockets::ConnectionSockets,
     symbol::{Symbol, Symbols},
+    tick::HistoricalTickData,
+    timeframe::Timeframe,
+    HistoricalTickDataRequest,
 };
 // use crate::{
 //     Account, HistoricalTickData, HistoricalTickDataRequest, InstantRates, OpenTrade, Order,
@@ -18,6 +22,7 @@ use serde_json::{Map, Value};
 pub struct Mt5Bridge {
     sockets: ConnectionSockets,
 }
+
 
 // Get generic information from mt5
 // impl Mt5Bridge {
@@ -126,23 +131,20 @@ impl Mt5Bridge {
     }
     pub fn get_historical_tick_data(
         symbol: &str,
-        timeframe: u32,
-        start_date: DateTime<Utc>,
-        end_date: DateTime<Utc>,
-    ) -> String {
+        timeframe: &str,
+        start_date: u32,
+        end_date: u32,
+    ) -> HistoricalTickData {
         let bridge = Mt5Bridge::init();
 
         // TODO: Prepare data request
-        let request = format!(
+        let data = &format!(
             "DATA;GET_HISTORICAL_DATA;{};{};{};{}",
-            symbol,
-            timeframe,
-            start_date.format("%Y.%m.%d %H:%M"),
-            end_date.format("%Y.%m.%d %H:%M")
+            symbol, timeframe, start_date, end_date
         );
-        let data = "DATA; GET_INSTANT_RATES";
 
         let response = bridge.sockets.request(data, 0).receive();
+        let response = bridge.parse_historical_tick_data(&response);
 
         response
     }
@@ -230,6 +232,19 @@ impl Mt5Bridge {
 
         let data = data.remove("symbol_data").unwrap();
         serde_json::from_value::<Symbol>(data).unwrap()
+    }
+
+    fn parse_historical_tick_data(&self, data: &str) -> HistoricalTickData {
+        let mut data = self.sanitize_mt5_response(data);
+
+        let timeframe = data.remove("timeframe").unwrap();
+        let ticks = data.remove("ticks").unwrap();
+
+        HistoricalTickData {
+            timeframe: serde_json::from_value::<Timeframe>(timeframe).unwrap(),
+            ticks: serde_json::from_value::<Vec<OHLC>>(ticks).unwrap(),
+        }
+
     }
     // Replace single quotations with double for parsing with serde_json
     // Remove the action key term located in almost every request.

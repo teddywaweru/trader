@@ -92,7 +92,7 @@ break;
 
       case 5:
         {
-         Print("Opening New Trade");
+         Print("Executing New Trade");
 
          //         "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},",
          //self.order_type as u8,
@@ -158,34 +158,37 @@ break;
 //+------------------------------------------------------------------+
 void GetAccountInfo(string &zmq_ret)
   {
+  zmq_ret += "'account_info': {";
    zmq_ret += "'account_number':" + (string)AccountInfoInteger(ACCOUNT_LOGIN);
    zmq_ret += ", 'name':'" + AccountInfoString(ACCOUNT_NAME) + "'";
-   zmq_ret += ", 'current_time': '" + TimeToString(TimeCurrent()) + "'";
-   zmq_ret += ", 'currency': '" + AccountInfoString(ACCOUNT_CURRENCY) + "'";
    zmq_ret += ", 'company': '" + AccountInfoString(ACCOUNT_COMPANY) + "'";
    zmq_ret += ", 'server': '" + AccountInfoString(ACCOUNT_SERVER) + "'";
 
    ENUM_ACCOUNT_TRADE_MODE account_type = (ENUM_ACCOUNT_TRADE_MODE)AccountInfoInteger(ACCOUNT_TRADE_MODE);
    string trade_mode;
    switch(account_type)
-     {
-      case ACCOUNT_TRADE_MODE_DEMO:
-         trade_mode = "demo";
-      case ACCOUNT_TRADE_MODE_CONTEST:
-         trade_mode = "contest";
-      case ACCOUNT_TRADE_MODE_REAL:
-         trade_mode = "real";
-      default:
-         trade_mode = "NA";
-         break;
-     }
+   {
+	   case ACCOUNT_TRADE_MODE_DEMO:
+		   trade_mode = "demo";
+	   case ACCOUNT_TRADE_MODE_CONTEST:
+		   trade_mode = "contest";
+	   case ACCOUNT_TRADE_MODE_REAL:
+		   trade_mode = "real";
+	   default:
+		   trade_mode = "NA";
+		   break;
+   }
 
    zmq_ret += ", 'mode': '" + trade_mode + "'";
-   zmq_ret += ", 'current_balance':" + (string)AccountInfoDouble(ACCOUNT_BALANCE);
+
+   zmq_ret += ", 'current_time': '" + TimeToString(TimeCurrent()) + "'";
+   zmq_ret += ", 'currency': '" + AccountInfoString(ACCOUNT_CURRENCY) + "'";
    zmq_ret += ", 'current_equity':" + (string)AccountInfoDouble(ACCOUNT_EQUITY);
-   zmq_ret += ", 'current_profit':" + (string)AccountInfoDouble(ACCOUNT_PROFIT);
+   zmq_ret += ", 'current_balance':" + (string)AccountInfoDouble(ACCOUNT_BALANCE);
    zmq_ret += ", 'free_margin':" + (string)AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   zmq_ret += ", 'current_profit':" + (string)AccountInfoDouble(ACCOUNT_PROFIT);
    zmq_ret += ", 'leverage' :" + (string)AccountInfoInteger(ACCOUNT_LEVERAGE);
+   zmq_ret  += "}";
 
   }
 //+------------------------------------------------------------------+

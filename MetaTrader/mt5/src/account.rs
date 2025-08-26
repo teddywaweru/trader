@@ -6,13 +6,17 @@ use serde_json;
 pub struct Account {
     pub account_number: i32,
     pub name: String,
+    //company
+    //server 
+    //mode
     pub current_time: String,
-    pub current_balance: f32,
-    pub current_equity: f32,
-    pub leverage: u32,
     pub currency: String,
+    pub current_equity: f32,
+    pub current_balance: f32,
     pub free_margin: f32,
     pub current_profit: f32,
+    pub leverage: u32,
+
 }
 // "{'_action': 'GET_ACCOUNT_INFO', 'account_number':61189795, '_data': [{'current_time': '2024.04.19
 // 08:56', 'name':'Teddy Waweru Njuguna', 'balance':40862.08000000, 'equity':41827.15000000, 'profit':965.07000000, 'margin_free':41003.31000000,

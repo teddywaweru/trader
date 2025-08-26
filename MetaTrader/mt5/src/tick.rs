@@ -15,20 +15,12 @@ impl HistoricalTickData {
         let flag = 0;
         let response = "".to_owned();
         let historical_data: Vec<OHLC>;
-        // let x = HistoricalTickData::from_mt5_response(&response);
-        // let x = Mt5Bridge::get_historical_tick_data()
-        // format!("stuff, {:#?}", x)
         todo!()
     }
     pub fn get_historical_tick_data(request: &HistoricalTickDataRequest) -> Self {
         todo!()
 
     }
-    // pub fn from_mt5_response(data: &str) -> Self {
-    //     let data =
-    //         serde_json::from_str(&data).expect(&format!("Unable to parse string: \n {data}"));
-    //     data
-    // }
 }
 // impl Deserialize
 // impl From<String> for HistoricalTickData {

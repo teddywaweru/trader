@@ -1,3 +1,4 @@
+// FIX: Can't have references to mt5?
 use mt5::{self, Order, OrderRequest, Symbol, Symbols};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
@@ -22,22 +23,24 @@ impl CalculatorWidget {
         let title = Line::from("Calculator");
 
         //FIX: Source of Symbol String?
-        let symbol = Symbol::get_symbol_data(bridge, "CHFJPY");
+        let symbol = Symbol::get_symbol_data(bridge, "CADCHF");
 
         // FIX: Source of Timeframe, start and end date
         let hist_tick_data = symbol.get_historical_tick_data(bridge, "16408", 0, 15);
 
         let ticks = &hist_tick_data.ticks;
 
-        let atr = algo::calculate_atr(ticks) / symbol.point as f32 / 10.0;
+        let atr = (algo::calculate_atr(ticks) / symbol.point as f32 / 10.0) as u32;
 
-        let order_request = OrderRequest {
+        let order = Order::new_order(OrderRequest {
             account,
-            order_type: mt5::OrderType::OrderTypeBuy,
-            symbol,
+            // FIX: Can't have references to mt5?
+            order_type: mt5::OrderType::OrderTypeSell,
+            symbol: symbol.clone(),
             risk: 0.02,
-        };
-        // let order_request =  OrderRequest::from(Order::new_order(order_request));
+            limit: Some(atr),
+        })
+        .execute_order(bridge);
 
         let symbol_text = Text::from_iter([
             symbol.name,

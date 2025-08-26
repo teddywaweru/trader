@@ -5,6 +5,7 @@
 use crate::{
     account::Account,
     ohlc::OHLC,
+    order::Order,
     sockets::ConnectionSockets,
     symbol::{Symbol, Symbols},
     tick::HistoricalTickData,
@@ -22,7 +23,6 @@ use serde_json::{Map, Value};
 pub struct Mt5Bridge {
     sockets: ConnectionSockets,
 }
-
 
 // Get generic information from mt5
 // impl Mt5Bridge {
@@ -52,58 +52,73 @@ pub struct Mt5Bridge {
 // }
 
 // Execute Operations
-// impl Mt5Bridge {
-//     // pub fn generate_order (order_request: OrderRequest) -> Order {
-//     //     todo!()
-//     //         //lot size
-//     //         //tp and sl values
-//     //         //risk amount
-//     //
-//     //
-//     // }
-//     pub fn generate_order(symbol: &str, order_type: &str, risk: f32) -> OpenTrade {
-//         let account = Self::get_account_info();
-//         let symbol = Self::get_symbol_info(symbol);
-//
-//         //Only processing trades in currency pairs only currently
-//         if symbol.sector != "Currency" {
-//             panic!(
-//                 "Unable to generate trades for symbols that are not in the Currency sector. \n
-//                   Received symbol: {symbol:#?}"
-//             );
-//         }
-//
-//         //Static OrderType currently
-//         let order_type = OrderType::from(order_type);
-//         let order_request = OrderRequest {
-//             account: Account::default(),
-//             order_type,
-//             symbol,
-//             risk
-//             // volume: todo!(),
-//             // price: todo!(),
-//             // sl: todo!(),
-//             // tp: todo!(),
-//         };
-//         // let mut order_request = OrderRequest::default();
-//         let request = Order::new_order(order_request).generate_request();
-//         // let request = Order::new_order(symbol, order_type, risk, account).generate_request();
-//
-//         let response = Mt5Bridge::init().sockets.request(&request, 0).receive();
-//         let response = OpenTrade::from_mt5_response(&response);
-//
-//         println!("Response back on OPEN_TRADE:\n {:#?}", response);
-//
-//         response
-//     }
-//
-//     fn modify_trade() {
-//         todo!()
-//     }
-//     fn close_trade() {
-//         todo!()
-//     }
-// }
+impl Mt5Bridge {
+    pub fn request_order(order: Order) -> Order {
+        let bridge = Self::init();
+        let data = format!(
+            "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},{:#?}",
+            order.order_type as u8,
+            order.symbol.name,
+            order.price,
+            order.sl,
+            order.tp,
+            order.comment,
+            order.volume,
+            order.magic,
+            order.ticket,
+            order.order_type_filling
+        );
+        let response = bridge.sockets.request(&data, 0).receive();
+
+        bridge.parse_order_data(response.as_str()).unwrap()
+
+        //lot size
+        //tp and sl values
+        //risk amount
+    }
+    // pub fn generate_order(symbol: &str, order_type: &str, risk: f32) -> OpenTrade {
+    //     let account = Self::get_account_info();
+    //     let symbol = Self::get_symbol_info(symbol);
+    //
+    //     //Only processing trades in currency pairs only currently
+    //     if symbol.sector != "Currency" {
+    //         panic!(
+    //             "Unable to generate trades for symbols that are not in the Currency sector. \n
+    //               Received symbol: {symbol:#?}"
+    //         );
+    //     }
+    //
+    //     //Static OrderType currently
+    //     let order_type = OrderType::from(order_type);
+    //     let order_request = OrderRequest {
+    //         account: Account::default(),
+    //         order_type,
+    //         symbol,
+    //         risk
+    //         // volume: todo!(),
+    //         // price: todo!(),
+    //         // sl: todo!(),
+    //         // tp: todo!(),
+    //     };
+    //     // let mut order_request = OrderRequest::default();
+    //     let request = Order::new_order(order_request).generate_request();
+    //     // let request = Order::new_order(symbol, order_type, risk, account).generate_request();
+    //
+    //     let response = Mt5Bridge::init().sockets.request(&request, 0).receive();
+    //     let response = OpenTrade::from_mt5_response(&response);
+    //
+    //     println!("Response back on OPEN_TRADE:\n {:#?}", response);
+    //
+    //     response
+    // }
+
+    fn modify_trade() {
+        todo!()
+    }
+    fn close_trade() {
+        todo!()
+    }
+}
 
 //  INIT connection sockets
 impl Mt5Bridge {
@@ -197,18 +212,16 @@ impl Mt5Bridge {
 
         let response = bridge.sockets.request(data, 0).receive();
 
-        println!("Account Info received from mt5: {:#?}", response);
-
-        // let (request, data) = bridge.sanitize_mt5_response(&response);
-        // bridge.parse_account_info(&data)
-        todo!()
+        bridge.parse_account_info(&response)
     }
 }
 
 // PARSER
 impl Mt5Bridge {
-    fn parse_account_info(&self, data: &str) -> Account {
-        todo!()
+    fn parse_account_info(&self, response: &str) -> Account {
+        let mut response = self.sanitize_mt5_response(&response);
+        let response = response.remove("account_info").unwrap();
+        serde_json::from_value::<Account>(response).unwrap()
     }
     fn parse_get_symbols(&self, data: String) -> Symbols {
         //NOTE: Data Received Takes the form {"action":"...", "symbols": "..."}
@@ -227,9 +240,7 @@ impl Mt5Bridge {
         symbols
     }
     fn parse_get_symbol_data(&self, data: &str) -> Symbol {
-        println!("Response back:: {data}");
         let mut data = self.sanitize_mt5_response(&data);
-
         let data = data.remove("symbol_data").unwrap();
         serde_json::from_value::<Symbol>(data).unwrap()
     }
@@ -244,17 +255,18 @@ impl Mt5Bridge {
             timeframe: serde_json::from_value::<Timeframe>(timeframe).unwrap(),
             ticks: serde_json::from_value::<Vec<OHLC>>(ticks).unwrap(),
         }
+    }
 
     }
     // Replace single quotations with double for parsing with serde_json
     // Remove the action key term located in almost every request.
-    fn sanitize_mt5_response(&self, data: &str) -> serde_json::Map<String, Value> {
-        let data = data.replace("'", "\"");
-        let data = serde_json::from_str(&data).expect(&format!(
+    fn sanitize_mt5_response(&self, response: &str) -> serde_json::Map<String, Value> {
+        let response = response.replace("'", "\"");
+        let response = serde_json::from_str(&response).expect(&format!(
             "Unable to parse string to Map<String, Value>\n Received String: \n {}",
-            data
+            response
         ));
-        data
+        response
         // let request = data.get("action").unwrap();
         // let request = serde_json::to_string(request).unwrap().replace("\"", "");
         // data.remove("action");

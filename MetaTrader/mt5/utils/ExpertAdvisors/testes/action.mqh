@@ -57,8 +57,6 @@ int get_action(string& scope, string& request)
 
    /* Process Messages */
    if(scope == "DATA" && request == "GET_ACCOUNT_INFO")
-   Print("Triggered at GET_SYMBOL_DATA");
-   
       switch_action = 1;
 
    if(scope == "DATA" && request == "GET_SYMBOLS")
@@ -77,7 +75,7 @@ int get_action(string& scope, string& request)
       // Eg.
       // TRADE|OPEN  | 1   |EURUSD|0    |50|50|R-to-MetaTrader4 |12345678
 
-      switch_action = 3;
+      switch_action = 5;
 
 
    if(scope == "TRADE" && request == "MODIFY")

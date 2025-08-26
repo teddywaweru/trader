@@ -1,7 +1,6 @@
 use crate::mt5_bridge::Mt5Bridge;
 use crate::{
-    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Symbols,
-    Timeframe,
+    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Symbols, Timeframe,
 };
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -20,31 +19,31 @@ pub struct OrderRequest {
     pub order_type: OrderType,
     pub symbol: Symbol,
     pub risk: f32,
-    // volume: f32,
-    // price: f32,
-    // sl: f32,
-    // tp: f32,
-    // order_type_filling: OrderTypeFilling,
-    // order_type_time: DateTime<Utc>,
-    // comment: String,
+    pub limit: Option<u32>, // volume: f32,
+                            // price: f32,
+                            // sl: f32,
+                            // tp: f32,
+                            // order_type_filling: OrderTypeFilling,
+                            // order_type_time: DateTime<Utc>,
+                            // comment: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Order {
-    magic: u32,
-    ticket: u32,
+    pub magic: u32,
+    pub ticket: u32,
     pub symbol: Symbol,
-    volume: f32,
-    price: f32,
-    sl: f32,
-    tp: f32,
-    deviation: u32,
+    pub volume: f32,
+    pub price: f32,
+    pub sl: f32,
+    pub tp: f32,
+    pub deviation: u32,
     pub order_type: OrderType,
-    order_type_filling: OrderTypeFilling,
-    order_type_time: OrderTypeTime,
-    expiration: DateTime<Utc>,
-    comment: String,
-    position: u32,
-    position_by: u32,
+    pub order_type_filling: OrderTypeFilling,
+    pub order_type_time: OrderTypeTime,
+    pub expiration: DateTime<Utc>,
+    pub comment: String,
+    pub position: u32,
+    pub position_by: u32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -222,6 +221,7 @@ impl Default for OrderRequest {
             // sl: 5.0,
             // tp: 5.0,
             order_type: OrderType::default(),
+            limit: None,
         }
     }
 }
@@ -261,7 +261,7 @@ impl Order {
         let volume: f32;
         let sl: f32;
         let tp: f32;
-        let pips: u32 = Self::calculate_pips(&order_request.symbol);
+        let pips: u32 = order_request.limit.unwrap();
         let tp_multiplier: f32 = 1.0;
         let sl_multiplier: f32 = 1.5;
         let price: f32;
@@ -292,7 +292,7 @@ impl Order {
                 comment = "testing sells".to_string();
                 volume = risk_amount
                     / (order_request.symbol.tick_value * 10 as f32 * pips as f32 * sl_multiplier)
-                    / 10 as f32;
+                        as f32;
             }
             OrderType::OrderTypeBuyLimit => {
                 panic!()
@@ -314,7 +314,6 @@ impl Order {
 
         new_order
     }
-    #[allow(dead_code)]
     fn calc_pip_value(symbol: &Symbol, account_curr: &str) -> f32 {
         let pip_value: f32;
         let (base_curr, quote_curr) = symbol.name.split_at(3);
@@ -384,7 +383,6 @@ impl Order {
                 .as_str()
             {
                 "No Connection" => todo!(),
-                "No Connection" => todo!(),
                 _ => todo!(),
             }
             if let Ok(data) = serde_json::from_str::<Mt5Error>(data) {
@@ -399,21 +397,16 @@ impl Order {
             }
         }
     }
-    pub fn generate_request(self) -> String {
-        let data = format!(
-            "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},{:#?}",
-            self.order_type as u8,
-            self.symbol.name,
-            self.price,
-            self.sl,
-            self.tp,
-            self.comment,
-            self.volume,
-            self.magic,
-            self.ticket,
-            self.order_type_filling
-        );
-        data
+    pub fn execute_order(self, bridge: &str) -> String {
+        match bridge {
+            "mt5" => {
+                Mt5Bridge::request_order(self);
+            }
+            &_ => {
+                todo!()
+            }
+        }
+        todo!()
     }
 
     fn calculate_pips(symbol: &Symbol) -> u32 {

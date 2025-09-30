@@ -80,7 +80,7 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
 
          break;
 
-	  case 4: 
+      case 4:
          Print("Getting Historical Tick Data");
 
          zmq_ret = "{'action': 'GET_HISTORICAL_DATA',";
@@ -88,7 +88,7 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
 
          zmq_ret += "}";
 
-break;
+         break;
 
       case 5:
         {
@@ -158,7 +158,7 @@ break;
 //+------------------------------------------------------------------+
 void GetAccountInfo(string &zmq_ret)
   {
-  zmq_ret += "'account_info': {";
+   zmq_ret += "'account_info': {";
    zmq_ret += "'account_number':" + (string)AccountInfoInteger(ACCOUNT_LOGIN);
    zmq_ret += ", 'name':'" + AccountInfoString(ACCOUNT_NAME) + "'";
    zmq_ret += ", 'company': '" + AccountInfoString(ACCOUNT_COMPANY) + "'";
@@ -167,17 +167,17 @@ void GetAccountInfo(string &zmq_ret)
    ENUM_ACCOUNT_TRADE_MODE account_type = (ENUM_ACCOUNT_TRADE_MODE)AccountInfoInteger(ACCOUNT_TRADE_MODE);
    string trade_mode;
    switch(account_type)
-   {
-	   case ACCOUNT_TRADE_MODE_DEMO:
-		   trade_mode = "demo";
-	   case ACCOUNT_TRADE_MODE_CONTEST:
-		   trade_mode = "contest";
-	   case ACCOUNT_TRADE_MODE_REAL:
-		   trade_mode = "real";
-	   default:
-		   trade_mode = "NA";
-		   break;
-   }
+     {
+      case ACCOUNT_TRADE_MODE_DEMO:
+         trade_mode = "demo";
+      case ACCOUNT_TRADE_MODE_CONTEST:
+         trade_mode = "contest";
+      case ACCOUNT_TRADE_MODE_REAL:
+         trade_mode = "real";
+      default:
+         trade_mode = "NA";
+         break;
+     }
 
    zmq_ret += ", 'mode': '" + trade_mode + "'";
 
@@ -239,15 +239,15 @@ void GetSymbolHistData(string& compArray[], string& zmq_ret)
 
    MqlRates rates[];
 
-int timeframe = (int)(StringToInteger(compArray[3]));
+   int timeframe = (int)(StringToInteger(compArray[3]));
 //set as hex value;
 
-   //int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]), StringToTime(compArray[4]), StringToTime(compArray[5]), rates);
-   int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]) , StringToInteger(compArray[4]), StringToInteger(compArray[5]), rates);
+//int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]), StringToTime(compArray[4]), StringToTime(compArray[5]), rates);
+   int rates_count = CopyRates(compArray[2], (ENUM_TIMEFRAMES)(compArray[3]), StringToInteger(compArray[4]), StringToInteger(compArray[5]), rates);
    if(rates_count < 0)
       return;
 
-   //zmq_ret += "'timeframe': '" + (string)(ENUM_TIMEFRAMES)compArray[3] + "',";
+//zmq_ret += "'timeframe': '" + (string)(ENUM_TIMEFRAMES)compArray[3] + "',";
    zmq_ret += "'timeframe': '" + "D1',";
 
    zmq_ret += "'ticks': [";

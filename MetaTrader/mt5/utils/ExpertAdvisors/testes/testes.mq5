@@ -218,7 +218,7 @@ ZmqMsg MessageHandler(ZmqMsg &request)
       request.getData(zmq_data);
       string dataStr = CharArrayToString(zmq_data);
 
-Print("Received Request: ", dataStr);
+      Print("Received Request: ", dataStr);
 
       // Process data
       ParseZmqMessage(dataStr, components);

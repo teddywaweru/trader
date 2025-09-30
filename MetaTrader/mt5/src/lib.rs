@@ -25,12 +25,12 @@ pub use ohlc::OHLC;
 use order::{serde_order_type, serde_order_type_filling};
 pub use order::{Order, OrderRequest, OrderType, OrderTypeFilling};
 pub use sockets::ConnectionSockets;
-pub use symbol::{Symbol, Symbols};
+pub use symbol::Symbol;
 pub use tick::{HistoricalTickData, HistoricalTickDataRequest};
 pub use timeframe::{serde_timeframe, Timeframe};
 //
 //
-pub use trade::{OpenTrade, OpenTrades};
+pub use trade::OpenTrade;
 // use serde::{Deserialize, Serialize};
 // use serde_json::{Map, Value};
 //

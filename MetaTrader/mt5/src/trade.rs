@@ -44,29 +44,14 @@ impl OpenTrade {
         ))
     }
 }
-#[derive(Debug, Serialize, Deserialize)]
-pub struct OpenTrades {
-    pub trades: Vec<OpenTrade>,
-}
-impl Default for OpenTrades {
-    fn default() -> Self {
-        OpenTrades { trades: vec![] }
-    }
-}
-impl OpenTrades {
-    pub fn parse_mt5_response(data: &str) -> OpenTrades {
-        serde_json::from_str(&data).expect(&format!(
-            "Unable to parse string to MT5 OpenTrades Object:\n Received String:\n {}",
-            data
-        ))
-    }
-    pub fn fetch_all() -> OpenTrades {
-        todo!()
-    }
-}
-impl From<String> for OpenTrades {
-    fn from(value: String) -> Self {
-        OpenTrades { trades: todo!() }
+impl OpenTrade {
+    pub fn get_all(bridge: &str) -> Result<Vec<OpenTrade>, Box<dyn std::error::Error>> {
+        match bridge {
+            "mt5" => Mt5Bridge::get_open_trades(),
+            &_ => {
+                todo!()
+            }
+        }
     }
 }
 
@@ -83,7 +68,4 @@ struct ClosedTrade {
     take_profit: f32,
     pnl: f32,
     comment: String,
-}
-struct ClosedTrades {
-    pub trades: Vec<ClosedTrade>,
 }

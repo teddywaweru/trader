@@ -1,6 +1,6 @@
 use crate::mt5_bridge::Mt5Bridge;
 use crate::{
-    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Symbols, Timeframe,
+    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Timeframe,
 };
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -335,7 +335,7 @@ impl Order {
             println!("quote_curr: {quote_curr}");
             //
             //FIX: Source of mt5 string?
-            let symbols = Symbols::get_symbols("mt5").symbols;
+            let symbols = Symbol::get_all("mt5");
             let alt_symbol: &Symbol = symbols
                 .iter()
                 .filter(|symbol| {

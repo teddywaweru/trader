@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand, ValueEnum};
-use mt5::{Account, OpenTrade, OpenTrades};
+use mt5::{Account, OpenTrade,};
 use mt5::{InstantRates, Order, OrderRequest};
 
 #[derive(Parser)]
@@ -31,8 +31,8 @@ impl Args {
             }
             SubArgs::GetActiveTrades => {
                 println!("Getting Active Trades");
-                // let active_trades = Mt5Bridge::get_existing_trades().unwrap();
-                let active_trades = OpenTrades::fetch_all();
+                //FIX: Source of mt5 bridge string?
+                let active_trades = OpenTrade::get_all("mt5");
 
                 println!("Current Trades:{:#?}", active_trades);
             }

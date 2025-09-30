@@ -7,7 +7,7 @@ use crate::{
     ohlc::OHLC,
     order::Order,
     sockets::ConnectionSockets,
-    symbol::{Symbol, Symbols},
+    symbol::Symbol,
     tick::HistoricalTickData,
     timeframe::Timeframe,
     HistoricalTickDataRequest,
@@ -187,7 +187,7 @@ impl Mt5Bridge {
 
 //SYMBOLS
 impl Mt5Bridge {
-    pub fn get_symbols() -> Symbols {
+    pub fn get_symbols() -> Vec<Symbol> {
         let data = "DATA;GET_SYMBOLS";
         let bridge = Self::init();
         let response = bridge.sockets.request(data, 1).receive();
@@ -223,7 +223,7 @@ impl Mt5Bridge {
         let response = response.remove("account_info").unwrap();
         serde_json::from_value::<Account>(response).unwrap()
     }
-    fn parse_get_symbols(&self, data: String) -> Symbols {
+    fn parse_get_symbols(&self, data: String) -> Vec<Symbol> {
         //NOTE: Data Received Takes the form {"action":"...", "symbols": "..."}
         let mut data = self.sanitize_mt5_response(&data);
 
@@ -231,11 +231,11 @@ impl Mt5Bridge {
         let data = data.remove("symbols").unwrap();
         let data = serde_json::from_value::<Vec<String>>(data).unwrap();
 
-        let mut symbols = Symbols::default();
+        let mut symbols: Vec<Symbol> = vec![];
         for symbol_name in data {
             let mut symbol = Symbol::default();
             symbol.name = symbol_name;
-            symbols.symbols.push(symbol);
+            symbols.push(symbol);
         }
         symbols
     }

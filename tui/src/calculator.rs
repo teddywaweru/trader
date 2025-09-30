@@ -1,5 +1,5 @@
 // FIX: Can't have references to mt5?
-use mt5::{self, Order, OrderRequest, Symbol, Symbols};
+use mt5::{self, OpenTrade, Order, OrderRequest, Symbol };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     prelude::{Buffer, Line, Rect, Text},
@@ -19,11 +19,11 @@ impl CalculatorWidget {
 
         //FIX: Source of mt5 bridge string?
         let bridge = "mt5";
-        let symbols = Symbols::get_symbols(bridge);
+        let symbols = Symbol::get_all(bridge);
         let title = Line::from("Calculator");
 
         //FIX: Source of Symbol String?
-        let symbol = Symbol::get_symbol_data(bridge, "CADCHF");
+        let symbol = Symbol::get_symbol_data(bridge, "EURCAD");
 
         // FIX: Source of Timeframe, start and end date
         let hist_tick_data = symbol.get_historical_tick_data(bridge, "16408", 0, 15);

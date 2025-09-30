@@ -1,4 +1,4 @@
-use mt5::Symbols;
+use mt5::Symbol;
 use ratatui::{
     layout::Alignment,
     prelude::{Buffer, Line, Rect, Text},
@@ -24,14 +24,14 @@ impl Widget for CurrencyWidget {
         Self: Sized,
     {
 
-        let symbols = Symbols::get_symbols("mt5");
+        let symbols = Symbol::get_all("mt5");
 
         let currencies_block = Block::bordered()
             .title("Currencies")
             .title_top("sfed")
             .title_alignment(Alignment::Center)
             .border_set(border::DOUBLE);
-        let currency_text = symbols.symbols
+        let currency_text = symbols
             .iter()
             .map(|symbol| Line::from(format!("{:#?}", symbol.name)).alignment(Alignment::Right))
             .collect::<Vec<Line>>();

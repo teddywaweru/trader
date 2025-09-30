@@ -42,6 +42,14 @@ impl Default for Symbol {
     }
 }
 impl Symbol {
+    pub fn get_all(bridge: &str) -> Vec<Symbol> {
+        match bridge {
+            "mt5" => Mt5Bridge::get_symbols(),
+            &_ => {
+                todo!()
+            }
+        }
+    }
     pub fn parse_mt5_response(data: &str) -> Self {
         let symbol = match serde_json::from_str(&data) {
             Ok(symbol) => symbol,
@@ -69,37 +77,8 @@ impl Symbol {
         end: u32,
     ) -> HistoricalTickData {
         match bridge {
-            "mt5" => {
-                Mt5Bridge::get_historical_tick_data(&self.name, timeframe, start, end)
-            }
-            _ => todo!()
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Symbols {
-    pub symbols: Vec<Symbol>,
-}
-
-impl Default for Symbols {
-    fn default() -> Self {
-        Symbols {
-            symbols: vec![Symbol::default(); 5],
-        }
-    }
-}
-impl Symbols {
-    fn new() -> Self {
-        Symbols { symbols: vec![] }
-    }
-
-    pub fn get_symbols(bridge: &str) -> Self {
-        match bridge {
-            "mt5" => Mt5Bridge::get_symbols(),
-            &_ => {
-                todo!()
-            }
+            "mt5" => Mt5Bridge::get_historical_tick_data(&self.name, timeframe, start, end),
+            _ => todo!(),
         }
     }
 }

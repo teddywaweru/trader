@@ -1,29 +1,11 @@
-use std::io::ErrorKind;
-
 use serde::{Deserialize, Serialize};
 use serde_json;
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Mt5Error {
-    #[serde(skip_deserializing)]
-    magic: u32,
-    #[serde(skip_deserializing)]
-    ticket: u32,
-    #[serde(skip_deserializing)]
-    open_time: String,
-    #[serde(skip_deserializing)]
-    close_lots: f32,
-    #[serde(skip_deserializing)]
-    open_price: String,
-    #[serde(skip_deserializing)]
-    sl_attempted: f32,
-    #[serde(skip_deserializing)]
-    tp_attempted: f32,
-    #[serde(skip_deserializing)]
-    close_price: f32,
-    response: String,
-    response_value: String,
-}
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Mt5Error {
+    error_retcode: u32,
+    error_message: String,
+}
 impl Mt5Error {
     fn from_mt5_response(data: String) -> Self {
         todo!()
@@ -45,18 +27,13 @@ impl Mt5Error {
             }
         }
     }
-    fn new() -> Self {
+    pub fn new<T>(context: &str, error: T) -> Self
+    where
+        T: std::error::Error,
+    {
         Self {
-            magic: 23,
-            ticket: 234,
-            open_time: "23423".to_string(),
-            close_lots: 234.0,
-            open_price: "234.0".to_string(),
-            sl_attempted: 234.0,
-            tp_attempted: 234.0,
-            close_price: 234.0,
-            response: "werw".to_string(),
-            response_value: "werow".to_string(),
+            error_retcode: 000000,
+            error_message: format!("{}\n {}", context, error),
         }
     }
 }

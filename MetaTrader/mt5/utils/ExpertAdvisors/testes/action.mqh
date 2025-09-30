@@ -61,7 +61,7 @@ int get_action(string& scope, string& request)
 
    if(scope == "DATA" && request == "GET_SYMBOLS")
       switch_action = 2;
-      
+
    if(scope == "DATA" && request == "GET_SYMBOL_DATA")
       switch_action = 3;
 
@@ -77,6 +77,8 @@ int get_action(string& scope, string& request)
 
       switch_action = 5;
 
+   if(scope == "TRADE" && request == "GET_OPEN_TRADES")
+      switch_action = 6;
 
    if(scope == "TRADE" && request == "MODIFY")
       switch_action = 3;
@@ -95,8 +97,6 @@ int get_action(string& scope, string& request)
    if(scope == "TRADE" && request == "CLOSE_ALL")
       switch_action = 6;
 
-   if(scope == "TRADE" && request == "GET_OPEN_TRADES")
-      switch_action = 7;
 
 
 

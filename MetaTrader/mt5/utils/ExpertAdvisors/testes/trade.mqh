@@ -39,9 +39,10 @@ void OpenNewTrade(MqlTradeRequest &request, string& zmq_ret)
 //  };
 
    zmq_ret += "'result': {";
+
    if(request.volume > 5.0)
      {
-      zmq_ret += "'response': 'LOT_SIZE_ERROR', 'response_value': 'MAX_LOT_SIZE_EXCEEDED'";
+      zmq_ret += "'response': 'LOT_SIZE_ERROR', 'error_message': 'MAX_LOT_SIZE_EXCEEDED'";
       zmq_ret += "}";
       return;
      }
@@ -49,13 +50,10 @@ void OpenNewTrade(MqlTradeRequest &request, string& zmq_ret)
    if(!OrderSend(request, result))
      {
       Print("Error Completing request.\n", GetLastError());
-      Print("retcode:", result.retcode, result.deal, result.order);
-      zmq_ret += "'response': 'ERROR', 'error_retcode': '" + (string)result.retcode + "'," + "'error_message': '" + result.comment + "'" ;
+      zmq_ret += "'response': 'ERROR', 'error_retcode': " + result.retcode + "," + "'error_message': '" + result.comment + "'" ;
       zmq_ret += "}";
       return;
      }
-
-
 
    zmq_ret += " 'ticket': " + (string)request.order + ", " + "'magic': " + (string)request.magic + ", 'symbol':{";
    GetSymbolData(zmq_ret, PositionGetSymbol((uint)request.order));

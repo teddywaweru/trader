@@ -122,8 +122,16 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
          zmq_ret = "{'action': 'NEW_TRADE',";
          OpenNewTrade(request, zmq_ret);
          zmq_ret += "}";
+
          break;
         }
+      case 6:
+         Print("Getting Open Trades");
+         zmq_ret = "{'action': 'GET_OPEN_TRADES',";
+         GetOpenTrades(zmq_ret);
+         zmq_ret += "}";
+
+         break;
 
       case 8:
          Print("Getting Historical Tick Data");
@@ -270,3 +278,60 @@ void GetSymbolHistData(string& compArray[], string& zmq_ret)
 
   }
 //+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void GetOpenTrades(string& zmq_ret)
+  {
+   int positions_total = PositionsTotal();
+		if ( positions_total < 1 )
+		{
+zmq_ret += "'error': 'No Open Positions Yet'";
+		return;
+		}
+
+		zmq_ret += "'trades':[";
+   for(int  i = 0; i < 3;  i++)
+     {
+      string symbol = PositionGetSymbol(i);
+      if(symbol == "")
+        {
+         Print("Error Fetching Position at idx %d : %d", i, GetLastError());
+		 zmq_ret += "Error Fetching Position at idx:" + i + ", Error: " + GetLastError();
+		return;
+        }
+      else
+        {
+		 zmq_ret += "{";
+		 zmq_ret += "'symbol_name':'" + symbol + "',";
+		 zmq_ret += "'ticket': "  + PositionGetInteger(POSITION_TICKET) + ",";
+		 zmq_ret += "'magic': "  + PositionGetInteger(POSITION_MAGIC) + ",";
+		 zmq_ret += "'trade_type': " + (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) + ",";
+		 zmq_ret += "'time_open': '"  + (string)PositionGetInteger(POSITION_TIME) + "',";
+		 zmq_ret += "'volume': "  + PositionGetDouble(POSITION_VOLUME) + ",";
+		 zmq_ret += "'price_open': "  + PositionGetDouble(POSITION_PRICE_OPEN) + ",";
+		 zmq_ret += "'tp': "  + PositionGetDouble(POSITION_TP) + ",";
+		 zmq_ret += "'sl': "  + PositionGetDouble(POSITION_SL) + ",";
+		 zmq_ret += "'current_price': "  + PositionGetDouble(POSITION_PRICE_CURRENT) + ",";
+		 zmq_ret += "'profit': "  + PositionGetDouble(POSITION_PROFIT) + ",";
+		 zmq_ret += "'swap': "  + PositionGetDouble(POSITION_SWAP) + ",";
+		 zmq_ret += "'comment': '"  + (string)PositionGetString(POSITION_COMMENT) + "'}";
+        }
+	 if ( i == 2 ) {
+	 zmq_ret += "]";
+	 } else {
+	 zmq_ret += ",";
+	 }
+     }
+
+  }
+//+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void GetOpenTrade(string& zmq_ret, string& symbol)
+{
+
+}

@@ -6,6 +6,26 @@ pub struct Mt5Error {
     error_retcode: u32,
     error_message: String,
 }
+impl std::fmt::Display for Mt5Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+impl std::error::Error for Mt5Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn std::error::Error> {
+        self.source()
+    }
+
+    // fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
+}
 impl Mt5Error {
     fn from_mt5_response(data: String) -> Self {
         todo!()

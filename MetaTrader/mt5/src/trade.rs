@@ -12,10 +12,11 @@ pub struct OpenTrade {
     #[serde(with = "serde_order_type")]
     trade_type: OrderType,
     price_open: f32,
-    time_open: String,
+    pub time_open: String,
     sl: f32,
     tp: f32,
-    profit: f32,
+    pub profit: f32,
+    pub  swap: f32,
     comment: String,
 }
 impl Default for OpenTrade {
@@ -31,6 +32,7 @@ impl Default for OpenTrade {
             sl: 500.0,
             tp: 500.0,
             profit: 0.0,
+            swap: 0.0,
             comment: "Default Comment".to_string(),
         }
     }

@@ -292,7 +292,7 @@ zmq_ret += "'error': 'No Open Positions Yet'";
 		}
 
 		zmq_ret += "'trades':[";
-   for(int  i = 0; i < 3;  i++)
+   for(int  i = 0; i < positions_total;  i++)
      {
       string symbol = PositionGetSymbol(i);
       if(symbol == "")
@@ -318,7 +318,7 @@ zmq_ret += "'error': 'No Open Positions Yet'";
 		 zmq_ret += "'swap': "  + PositionGetDouble(POSITION_SWAP) + ",";
 		 zmq_ret += "'comment': '"  + (string)PositionGetString(POSITION_COMMENT) + "'}";
         }
-	 if ( i == 2 ) {
+	 if ( i == positions_total - 1 ) {
 	 zmq_ret += "]";
 	 } else {
 	 zmq_ret += ",";

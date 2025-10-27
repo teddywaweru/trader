@@ -1,8 +1,8 @@
 // FIX: Can't have references to mt5?
-use mt5::{self, OpenTrade, Order, OrderRequest, Symbol };
+use mt5::{self, OpenTrade, Order, OrderRequest, Symbol};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    prelude::{Buffer, Line, Rect, Text},
+    prelude::{Buffer, Line, Rect, Span, Text},
     symbols::border,
     widgets::{Block, Paragraph, Widget},
 };
@@ -15,6 +15,7 @@ impl Default for CalculatorWidget {
 }
 impl CalculatorWidget {
     fn render_first_calculator(area: Rect, buf: &mut Buffer) {
+        // Data and Logic
         let account = mt5::Account::get_account_info();
 
         //FIX: Source of mt5 bridge string?
@@ -30,7 +31,7 @@ impl CalculatorWidget {
 
         let ticks = &hist_tick_data.ticks;
 
-        let atr = (algo::calculate_atr(ticks) / symbol.point as f32 / 10.0) as u32;
+        let atr = (algo::calculate_atr(ticks) / symbol.point / 10.0) as u32;
 
         let order = Order::new_order(OrderRequest {
             account,
@@ -39,18 +40,17 @@ impl CalculatorWidget {
             symbol: symbol.clone(),
             risk: 0.02,
             limit: Some(atr),
-        })
-        .execute_order(bridge);
+            split_order: true,
+        });
+        // .execute_order(bridge);
 
-        let symbol_text = Text::from_iter([
-            symbol.name,
-            symbol.sector,
-            String::from(symbol.spread.to_string()),
-        ]);
-        Paragraph::new(symbol_text);
+        let open_trades = OpenTrade::get_all("mt5");
+
+        // UI
         let calculator_block = Block::bordered()
             .title(title)
             .title_alignment(Alignment::Center);
+
 
         let calculator_text = Line::from("Some text");
         let x = format!("{:?}", hist_tick_data);

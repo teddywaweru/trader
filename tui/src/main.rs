@@ -16,11 +16,19 @@ mod calculator;
 mod chart;
 mod counter;
 mod currencies;
+mod account;
+mod risk;
+mod news;
+mod opentrades;
 
 use calculator::CalculatorWidget;
 use chart::ChartWidget;
 use counter::CounterWidget;
 use currencies::CurrencyWidget;
+use account::AccountWidget;
+use risk::RiskWidget;
+use news::NewsWidget;
+use opentrades::OpenTradesWidget;
 
 #[derive(Debug, Default)]
 pub struct App {
@@ -48,28 +56,65 @@ impl App {
 
     fn draw(&self, frame: &mut Frame) {
         // Set constraints and Layout
-        let constraints = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
-        let layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints.clone())
-            .split(frame.area());
+        // let layout = Layout::default()
+        //     .direction(Direction::Vertical)
+        //     .constraints(constraints.clone())
+        //     .split(frame.area());
 
-        let inner_layout = Layout::default()
+        // Account Details && Horizontal Rest
+        let constraints = vec![Constraint::Percentage(10), Constraint::Percentage(90)];
+        let layout = Layout::default().direction(Direction::Vertical).constraints(constraints).split(frame.area());
+        let account_details_area = layout[0];
+
+        // Open Trades & Vertical Rest
+        let constraints = vec![Constraint::Percentage(30), Constraint::Percentage(70)];
+        let layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(constraints)
-            .split(layout[0]);
+            .split(layout[1]);
+        let open_trades_area = layout[0];
+
+        // Chart Area, News & Horizontal Rest
+        let constraints = vec![Constraint::Percentage(70), Constraint::Percentage(30)];
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(layout[1]);
+        let chart_news_area = layout[0];
+        let risk_calculator_area = layout[1];
+
+        // Chart & News
+        let constraints = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
+        let layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(constraints)
+            .split(chart_news_area);
+        let chart_area = layout[0];
+        let news_area = layout[1];
+
+        // Risk && Calculator
+        let constraints = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
+        let layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(constraints)
+            .split(risk_calculator_area);
+        let risk_area = layout[0];
+        let calculator_area = layout[1];
 
         let mut rects: Vec<Rect> = vec![Rect::default(); 5];
-        rects.insert(0, inner_layout[0]);
-        rects.insert(1, inner_layout[1]);
-        rects.insert(2, layout[1]);
+        // rects.insert(0, account_details_area);
+        // rects.insert(1, inner_layout[1]);
+        // rects.insert(2, layout[1]);
 
         // Prep the Widgets to be built
 
         //Render Widgets
-        frame.render_widget(CurrencyWidget::default(), rects[0]);
-        frame.render_widget(CalculatorWidget::default(), rects[1]);
-        frame.render_widget(ChartWidget::default(), rects[2]);
+        frame.render_widget(AccountWidget::default(), account_details_area);
+        frame.render_widget(OpenTradesWidget::default(), open_trades_area);
+        frame.render_widget(ChartWidget::default(), chart_area);
+        frame.render_widget(NewsWidget::default(), news_area);
+        frame.render_widget(RiskWidget::default(), risk_area);
+        frame.render_widget(CalculatorWidget::default(), calculator_area);
     }
     fn handle_events(&mut self) -> std::io::Result<()> {
         match event::read()? {
@@ -86,6 +131,7 @@ impl App {
             KeyCode::Left => self.decrement_counter(),
             KeyCode::Right => self.increment_counter(),
             KeyCode::Char('C') => self.app_page(key_event.code),
+            // KeyCode::Char('r') => CalculatorWidget::
             // KeyCode::Char('j') => frame.kkkkk
             KeyCode::Null => {}
             _ => {}

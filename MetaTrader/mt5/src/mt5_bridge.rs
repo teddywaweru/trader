@@ -3,13 +3,8 @@
 // Tick values
 // Account Info
 use crate::{
-    account::Account,
-    ohlc::OHLC,
-    order::Order,
-    sockets::ConnectionSockets,
-    symbol::Symbol,
-    tick::HistoricalTickData,
-    timeframe::Timeframe,
+    account::Account, error::Mt5Error, ohlc::OHLC, order::Order, sockets::ConnectionSockets,
+    symbol::Symbol, tick::HistoricalTickData, timeframe::Timeframe, trade::OpenTrade,
     HistoricalTickDataRequest,
 };
 // use crate::{
@@ -24,36 +19,9 @@ pub struct Mt5Bridge {
     sockets: ConnectionSockets,
 }
 
-// Get generic information from mt5
-// impl Mt5Bridge {
-//     //TICK DATA
-//     fn get_tick_data() {
-//         todo!()
-//     }
-//     fn get_ohlc_data() {
-//         todo!()
-//     }
-//     pub fn get_symbol_info(symbol: &str) -> Symbol {
-//         // TODO only get single symbol, instead of array
-//         // let symbols = Self::get_symbols();
-//         let data = format!("DATA;GET_SYMBOL_INFO;{}", symbol);
-//         let response = Self::init().sockets.request(&data, 0).receive();
-//         let symbol = Symbol::parse_mt5_response(&response);
-//
-//         symbol
-//     }
-//     pub fn get_symbols() -> Symbols {
-//         let data = "DATA;GET_SYMBOLS";
-//         let response = Mt5Bridge::init().sockets.request(data, 1).receive();
-//
-//         let response = Symbols::parse_mt5_response(&response);
-//         response
-//     }
-// }
-
 // Execute Operations
 impl Mt5Bridge {
-    pub fn request_order(order: Order) -> Order {
+    pub fn request_order(order: Order) -> Result<Order, Box<dyn std::error::Error>> {
         let bridge = Self::init();
         let data = format!(
             "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},{:#?}",
@@ -70,53 +38,19 @@ impl Mt5Bridge {
         );
         let response = bridge.sockets.request(&data, 0).receive();
 
-        bridge.parse_order_data(response.as_str()).unwrap()
+        match bridge.parse_order_data(response.as_str()) {
+            Ok(response) => return Ok(response),
+            Err(response) => {
+                panic!("Here's the response{:?} ", response)
+            }
+        }
 
-        //lot size
-        //tp and sl values
-        //risk amount
-    }
-    // pub fn generate_order(symbol: &str, order_type: &str, risk: f32) -> OpenTrade {
-    //     let account = Self::get_account_info();
-    //     let symbol = Self::get_symbol_info(symbol);
-    //
-    //     //Only processing trades in currency pairs only currently
-    //     if symbol.sector != "Currency" {
-    //         panic!(
-    //             "Unable to generate trades for symbols that are not in the Currency sector. \n
-    //               Received symbol: {symbol:#?}"
-    //         );
-    //     }
-    //
-    //     //Static OrderType currently
-    //     let order_type = OrderType::from(order_type);
-    //     let order_request = OrderRequest {
-    //         account: Account::default(),
-    //         order_type,
-    //         symbol,
-    //         risk
-    //         // volume: todo!(),
-    //         // price: todo!(),
-    //         // sl: todo!(),
-    //         // tp: todo!(),
-    //     };
-    //     // let mut order_request = OrderRequest::default();
-    //     let request = Order::new_order(order_request).generate_request();
-    //     // let request = Order::new_order(symbol, order_type, risk, account).generate_request();
-    //
-    //     let response = Mt5Bridge::init().sockets.request(&request, 0).receive();
-    //     let response = OpenTrade::from_mt5_response(&response);
-    //
-    //     println!("Response back on OPEN_TRADE:\n {:#?}", response);
-    //
-    //     response
-    // }
-
-    fn modify_trade() {
-        todo!()
-    }
-    fn close_trade() {
-        todo!()
+        fn modify_trade() {
+            todo!()
+        }
+        fn close_trade() {
+            todo!()
+        }
     }
 }
 
@@ -129,13 +63,6 @@ impl Mt5Bridge {
 }
 // Collect Data Reports
 impl Mt5Bridge {
-    pub fn get_existing_trades() -> Result<String, Box<dyn std::error::Error>> {
-        let bridge = Self::init();
-        let data = "TRADE;GET_OPEN_TRADES";
-        let response = bridge.sockets.request(data, 0).receive();
-
-        Ok(response)
-    }
     pub fn get_instant_rates(symbol: &str) -> String {
         let bridge = Mt5Bridge::init();
         let data = "DATA; GET_INSTANT_RATES";
@@ -167,22 +94,20 @@ impl Mt5Bridge {
     pub fn get_indicator_data(data: &str) -> String {
         todo!()
     }
-    //
+    pub fn get_open_trades() -> Result<Vec<OpenTrade>, Box<dyn std::error::Error>> {
+        let bridge = Self::init();
+
+        let data = "TRADE;GET_OPEN_TRADES";
+        let response = bridge.sockets.request(data, 0).receive();
+        bridge.parse_open_trades(&response)
+    }
+
     pub fn mt5_date_from(date: chrono::DateTime<Utc>) -> String {
         let date = std::time::Instant::now();
         let date = format!("{:#?}", date);
         println!("Here's the date: {date}");
         todo!()
-        // let date: String = date.into();
-        // String::from(date)
     }
-    // }
-    // pub fn get_existing_trades() -> Result<String, Box<dyn std::error::Error>> {
-    //     let data = "TRADE;GET_OPEN_TRADES";
-    //     let sockets = ConnectionSockets::init_and_connect()?;
-    //     let response = sockets.request(data, 0)?.receive()?;
-    //
-    //     Ok(response)
 }
 
 //SYMBOLS
@@ -191,8 +116,6 @@ impl Mt5Bridge {
         let data = "DATA;GET_SYMBOLS";
         let bridge = Self::init();
         let response = bridge.sockets.request(data, 1).receive();
-
-        // println!("Symbols received from mt5: {:#?}", response);
 
         bridge.parse_get_symbols(response)
     }
@@ -244,22 +167,61 @@ impl Mt5Bridge {
         let data = data.remove("symbol_data").unwrap();
         serde_json::from_value::<Symbol>(data).unwrap()
     }
-
     fn parse_historical_tick_data(&self, data: &str) -> HistoricalTickData {
         let mut data = self.sanitize_mt5_response(data);
 
         let timeframe = data.remove("timeframe").unwrap();
         let ticks = data.remove("ticks").unwrap();
-
         HistoricalTickData {
             timeframe: serde_json::from_value::<Timeframe>(timeframe).unwrap(),
             ticks: serde_json::from_value::<Vec<OHLC>>(ticks).unwrap(),
         }
     }
+    fn parse_order_data(&self, response: &str) -> Result<Order, Box<dyn std::error::Error>> {
+        let mut response = self.sanitize_mt5_response(response);
+        let response = response
+            .remove("result")
+            .expect(format!("No  'result' Value from MT5: {:?}", response).as_str());
 
+        match serde_json::from_value::<Order>(response.clone()) {
+            Ok(r) => {
+                return Ok(r);
+            }
+            Err(r) => {
+                match serde_json::from_value::<Mt5Error>(response) {
+                    Ok(r) => {
+                        return Err(Box::new(r));
+                    }
+                    Err(r) => {
+                        return Err(Box::new(Mt5Error::new("Unable to Parse Response into Order, or Mt5Error. Likely serde_json error",r)));
+                    }
+                }
+            }
+        };
+    }
+    fn parse_open_trades(
+        &self,
+        response: &str,
+    ) -> Result<Vec<OpenTrade>, Box<dyn std::error::Error>> {
+        let mut response = self.sanitize_mt5_response(response);
+        if let Some(response) = response.remove("trades") {
+            // panic!("Here's the response, {:?}", response);
+            match serde_json::from_value::<Vec<OpenTrade>>(response) {
+                Ok(r) => {
+                    return Ok(r);
+                }
+                Err(r) => return Err(Box::new(r)),
+            }
+        } else {
+            return Err(format!(
+                "No Open Trade Positions obtained in Response. MT5 Response: \n{:?}",
+                response
+            )
+            .into());
+        }
     }
     // Replace single quotations with double for parsing with serde_json
-    // Remove the action key term located in almost every request.
+    // Remove the action key term located in almost every request
     fn sanitize_mt5_response(&self, response: &str) -> serde_json::Map<String, Value> {
         let response = response.replace("'", "\"");
         let response = serde_json::from_str(&response).expect(&format!(
@@ -267,14 +229,5 @@ impl Mt5Bridge {
             response
         ));
         response
-        // let request = data.get("action").unwrap();
-        // let request = serde_json::to_string(request).unwrap().replace("\"", "");
-        // data.remove("action");
-        // let data = serde_json::to_string(&data).expect(&format!(
-        //     "Unable to parse serde_json Map to String. \n Received Map: \n {:#?}",
-        //     data
-        // ));
-        // panic!("The data string: {:#?}",  data);
-        // (request, data)
     }
 }

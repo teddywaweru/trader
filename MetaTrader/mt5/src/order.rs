@@ -19,7 +19,8 @@ pub struct OrderRequest {
     pub order_type: OrderType,
     pub symbol: Symbol,
     pub risk: f32,
-    pub limit: Option<u32>, // volume: f32,
+    pub limit: Option<u32>,
+    pub split_order: bool, // volume: f32,
                             // price: f32,
                             // sl: f32,
                             // tp: f32,
@@ -27,6 +28,7 @@ pub struct OrderRequest {
                             // order_type_time: DateTime<Utc>,
                             // comment: String,
 }
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Order {
     pub magic: u32,
@@ -98,19 +100,19 @@ impl Default for OrderTypeFilling {
 
 #[derive(Debug, Serialize, Deserialize)]
 enum OrderTypeTime {
-    OrderTimeGtc,
-    OrderTimeDay,
-    OrderTimeSpecified,
-    OrderTimeSpecifiedDay,
+    Gtc,
+    Day,
+    Specified,
+    SpecifiedDay,
 }
 
 impl Default for OrderTypeTime {
     fn default() -> Self {
-        Self::OrderTimeGtc
+        Self::Gtc
     }
 }
 
-#[derive(Debug, EnumIter, Serialize, Deserialize)]
+#[derive(Debug, Clone, EnumIter, Serialize, Deserialize)]
 pub enum OrderType {
     OrderTypeBuy = 0,
     OrderTypeSell = 1,
@@ -222,6 +224,7 @@ impl Default for OrderRequest {
             // tp: 5.0,
             order_type: OrderType::default(),
             limit: None,
+            split_order: false
         }
     }
 }

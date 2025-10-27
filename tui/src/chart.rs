@@ -22,7 +22,7 @@ impl Widget for ChartWidget {
         let title = Line::from("Chart Region");
 
         let currencies_block = Block::bordered()
-            .title("Currencies")
+            .title("Charts")
             .title_top("sfed")
             .border_set(border::DOUBLE);
 

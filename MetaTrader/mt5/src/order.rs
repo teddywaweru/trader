@@ -114,19 +114,19 @@ impl Default for OrderTypeTime {
 
 #[derive(Debug, Clone, EnumIter, Serialize, Deserialize)]
 pub enum OrderType {
-    OrderTypeBuy = 0,
-    OrderTypeSell = 1,
-    OrderTypeBuyLimit = 2,
-    OrderTypeSellLimit = 3,
-    OrderTypeBuyStop = 4,
-    OrderTypeSellStop = 5,
-    OrderTypeBuyStopLimit = 6,
-    OrderTypeSellStopLimit = 7,
-    OrderNanDefault,
+    Buy = 0,
+    Sell = 1,
+    BuyLimit = 2,
+    SellLimit = 3,
+    BuyStop = 4,
+    SellStop = 5,
+    StopLimit = 6,
+    SellStopLimit = 7,
+    NanDefault,
 }
 impl Default for OrderType {
     fn default() -> Self {
-        Self::OrderNanDefault
+        Self::NanDefault
     }
 }
 impl OrderType {
@@ -137,12 +137,12 @@ impl OrderType {
 impl From<&str> for OrderType {
     fn from(value: &str) -> Self {
         match value {
-            "buy" => OrderType::OrderTypeBuy,
-            "sell" => OrderType::OrderTypeSell,
-            "buylimit" => OrderType::OrderTypeBuyLimit,
-            "selllimit" => OrderType::OrderTypeSell,
-            "buystop" => OrderType::OrderTypeBuyStop,
-            "sellstop" => OrderType::OrderTypeSellStop,
+            "buy" => OrderType::Buy,
+            "sell" => OrderType::Sell,
+            "buylimit" => OrderType::BuyLimit,
+            "selllimit" => OrderType::Sell,
+            "buystop" => OrderType::BuyStop,
+            "sellstop" => OrderType::SellStop,
             _ => panic!("Unable to translate the OrderType String to Object: {value}"),
         }
     }
@@ -158,15 +158,15 @@ pub mod serde_order_type {
         let order_type = u8::deserialize(deserializer)?;
 
         let order_type = match order_type {
-            0 => OrderType::OrderTypeBuy,
-            1 => OrderType::OrderTypeSell,
-            2 => OrderType::OrderTypeBuyLimit,
-            3 => OrderType::OrderTypeSellLimit,
-            4 => OrderType::OrderTypeBuyStop,
-            5 => OrderType::OrderTypeSellStop,
-            6 => OrderType::OrderTypeBuyStopLimit,
-            7 => OrderType::OrderTypeSellStopLimit,
-            _ => OrderType::OrderNanDefault,
+            0 => OrderType::Buy,
+            1 => OrderType::Sell,
+            2 => OrderType::BuyLimit,
+            3 => OrderType::SellLimit,
+            4 => OrderType::BuyStop,
+            5 => OrderType::SellStop,
+            6 => OrderType::StopLimit,
+            7 => OrderType::SellStopLimit,
+            _ => OrderType::NanDefault,
         };
 
         Ok(order_type)
@@ -176,15 +176,15 @@ pub mod serde_order_type {
         S: Serializer,
     {
         let order_type = match order_type {
-            OrderType::OrderTypeBuy => OrderType::OrderTypeBuy as u8,
-            OrderType::OrderTypeSell => OrderType::OrderTypeSell as u8,
-            OrderType::OrderTypeBuyLimit => OrderType::OrderTypeBuyLimit as u8,
-            OrderType::OrderTypeSellLimit => OrderType::OrderTypeSellLimit as u8,
-            OrderType::OrderTypeBuyStop => OrderType::OrderTypeBuyStop as u8,
-            OrderType::OrderTypeSellStop => OrderType::OrderTypeSellStop as u8,
-            OrderType::OrderTypeBuyStopLimit => OrderType::OrderTypeBuyStopLimit as u8,
-            OrderType::OrderTypeSellStopLimit => OrderType::OrderTypeSellStopLimit as u8,
-            OrderType::OrderNanDefault => OrderType::OrderNanDefault as u8,
+            OrderType::Buy => OrderType::Buy as u8,
+            OrderType::Sell => OrderType::Sell as u8,
+            OrderType::BuyLimit => OrderType::BuyLimit as u8,
+            OrderType::SellLimit => OrderType::SellLimit as u8,
+            OrderType::BuyStop => OrderType::BuyStop as u8,
+            OrderType::SellStop => OrderType::SellStop as u8,
+            OrderType::StopLimit => OrderType::StopLimit as u8,
+            OrderType::SellStopLimit => OrderType::SellStopLimit as u8,
+            OrderType::NanDefault => OrderType::NanDefault as u8,
         };
 
         serializer.serialize_u8(order_type)
@@ -201,7 +201,7 @@ impl Default for Order {
             sl: 500.0,
             tp: 500.0,
             deviation: 0,
-            order_type: OrderType::OrderNanDefault,
+            order_type: OrderType::NanDefault,
             order_type_filling: OrderTypeFilling::default(),
             order_type_time: OrderTypeTime::default(),
             expiration: Utc::now(),
@@ -275,7 +275,7 @@ impl Order {
         // get instrument category
         // separate symbol to first and second currencies
         match order_request.order_type {
-            OrderType::OrderTypeBuy => {
+            OrderType::Buy => {
                 price = order_request.symbol.ask;
                 sl = order_request.symbol.bid
                     - ((pips * 10) as f32 * order_request.symbol.point * sl_multiplier) as f32;
@@ -286,7 +286,7 @@ impl Order {
                     / (order_request.symbol.tick_value * 10 as f32 * pips as f32 * sl_multiplier)
                         as f32;
             }
-            OrderType::OrderTypeSell => {
+            OrderType::Sell => {
                 price = order_request.symbol.bid;
                 sl = order_request.symbol.ask
                     + ((pips * 10) as f32 * order_request.symbol.point * sl_multiplier) as f32;
@@ -297,7 +297,7 @@ impl Order {
                     / (order_request.symbol.tick_value * 10 as f32 * pips as f32 * sl_multiplier)
                         as f32;
             }
-            OrderType::OrderTypeBuyLimit => {
+            OrderType::BuyLimit => {
                 panic!()
             }
             _ => {

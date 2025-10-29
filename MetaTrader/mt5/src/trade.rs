@@ -10,7 +10,7 @@ pub struct OpenTrade {
     pub symbol_name: String,
     volume: f32,
     #[serde(with = "serde_order_type")]
-    trade_type: OrderType,
+    pub trade_type: OrderType,
     price_open: f32,
     pub time_open: String,
     sl: f32,
@@ -26,7 +26,7 @@ impl Default for OpenTrade {
             magic: 123321,
             symbol_name: "".to_string(),
             volume: 0.01,
-            trade_type: OrderType::OrderNanDefault,
+            trade_type: OrderType::NanDefault,
             price_open: 0.0,
             time_open: "Default time".to_string(),
             sl: 500.0,

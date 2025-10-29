@@ -36,7 +36,7 @@ impl CalculatorWidget {
         let order = Order::new_order(OrderRequest {
             account,
             // FIX: Can't have references to mt5?
-            order_type: mt5::OrderType::OrderTypeSell,
+            order_type: mt5::OrderType::Sell,
             symbol: symbol.clone(),
             risk: 0.02,
             limit: Some(atr),

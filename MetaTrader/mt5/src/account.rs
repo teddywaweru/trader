@@ -2,7 +2,7 @@ use crate::mt5_bridge::Mt5Bridge;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone,Debug, Serialize, Deserialize)]
 pub struct Account {
     pub account_number: i32,
     pub name: String,

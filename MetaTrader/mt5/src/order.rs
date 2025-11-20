@@ -20,7 +20,6 @@ pub struct OrderRequest {
     pub symbol: Symbol,
     pub risk: f32,
     pub limit: Option<u32>,
-    pub split_order: bool, // volume: f32,
                             // price: f32,
                             // sl: f32,
                             // tp: f32,
@@ -112,7 +111,7 @@ impl Default for OrderTypeTime {
     }
 }
 
-#[derive(Debug, Clone, EnumIter, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, EnumIter, Serialize, Deserialize)]
 pub enum OrderType {
     Buy = 0,
     Sell = 1,
@@ -224,11 +223,10 @@ impl Default for OrderRequest {
             // tp: 5.0,
             order_type: OrderType::default(),
             limit: None,
-            split_order: false
+            // split_order: false
         }
     }
 }
-impl OrderRequest {}
 //Calculate Order parameters, which generates an order request
 //Send an order request, which generates and executes an order
 impl From<&OrderRequest> for Order {
@@ -400,7 +398,7 @@ impl Order {
             }
         }
     }
-    pub fn execute_order(self, bridge: &str) -> String {
+    pub fn execute_order(&self, bridge: &str) -> String {
         match bridge {
             "mt5" => {
                 Mt5Bridge::request_order(self);

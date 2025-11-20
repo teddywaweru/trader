@@ -24,7 +24,7 @@ impl CalculatorWidget {
         let title = Line::from("Calculator");
 
         //FIX: Source of Symbol String?
-        let symbol = Symbol::get_symbol_data(bridge, "EURCAD");
+        let symbol = Symbol::get_symbol_data(bridge, "EURGBP");
 
         // FIX: Source of Timeframe, start and end date
         let hist_tick_data = symbol.get_historical_tick_data(bridge, "16408", 0, 15);
@@ -33,16 +33,29 @@ impl CalculatorWidget {
 
         let atr = (algo::calculate_atr(ticks) / symbol.point / 10.0) as u32;
 
-        let order = Order::new_order(OrderRequest {
-            account,
-            // FIX: Can't have references to mt5?
-            order_type: mt5::OrderType::Sell,
-            symbol: symbol.clone(),
-            risk: 0.02,
-            limit: Some(atr),
-            split_order: true,
-        });
-        // .execute_order(bridge);
+        let orders = vec![
+            Order::new_order(OrderRequest {
+                account: account.clone(),
+                // FIX: Can't have references to mt5?
+                order_type: mt5::OrderType::Buy,
+                symbol: symbol.clone(),
+                risk: 0.01,
+                limit: Some(atr),
+            }),
+            Order::new_order(OrderRequest {
+                account,
+                // FIX: Can't have references to mt5?
+                order_type: mt5::OrderType::Buy,
+                symbol: symbol.clone(),
+                risk: 0.01,
+                limit: Some(atr),
+            }),
+        ];
+
+        orders
+            .iter()
+            .map(|order| order.execute_order(bridge))
+            .for_each(drop);
 
         let open_trades = OpenTrade::get_all("mt5");
 
@@ -50,7 +63,6 @@ impl CalculatorWidget {
         let calculator_block = Block::bordered()
             .title(title)
             .title_alignment(Alignment::Center);
-
 
         let calculator_text = Line::from("Some text");
         let x = format!("{:?}", hist_tick_data);

@@ -21,7 +21,7 @@ pub struct Mt5Bridge {
 
 // Execute Operations
 impl Mt5Bridge {
-    pub fn request_order(order: Order) -> Result<Order, Box<dyn std::error::Error>> {
+    pub fn request_order(order: &Order) -> Result<Order, Box<dyn std::error::Error>> {
         let bridge = Self::init();
         let data = format!(
             "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},{:#?}",
@@ -187,13 +187,14 @@ impl Mt5Bridge {
             Ok(r) => {
                 return Ok(r);
             }
-            Err(r) => {
+            Err(err) => {
                 match serde_json::from_value::<Mt5Error>(response) {
                     Ok(r) => {
                         return Err(Box::new(r));
                     }
                     Err(r) => {
-                        return Err(Box::new(Mt5Error::new("Unable to Parse Response into Order, or Mt5Error. Likely serde_json error",r)));
+                        return Err(Box::new(err));
+                        // return Err(Box::new(Mt5Error::new("Unable to Parse Response into Order, or Mt5Error. Likely serde_json error",err)));
                     }
                 }
             }

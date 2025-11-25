@@ -1,7 +1,5 @@
 use crate::mt5_bridge::Mt5Bridge;
-use crate::{
-    error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Timeframe,
-};
+use crate::{error::Mt5Error, Account, HistoricalTickDataRequest, Indicator, Symbol, Timeframe};
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
@@ -20,12 +18,12 @@ pub struct OrderRequest {
     pub symbol: Symbol,
     pub risk: f32,
     pub limit: Option<u32>,
-                            // price: f32,
-                            // sl: f32,
-                            // tp: f32,
-                            // order_type_filling: OrderTypeFilling,
-                            // order_type_time: DateTime<Utc>,
-                            // comment: String,
+    // price: f32,
+    // sl: f32,
+    // tp: f32,
+    // order_type_filling: OrderTypeFilling,
+    // order_type_time: DateTime<Utc>,
+    // comment: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -34,7 +32,7 @@ pub struct Order {
     pub ticket: u32,
     pub symbol: Symbol,
     pub volume: f32,
-    pub price: f32,
+    pub open_price: f32,
     pub sl: f32,
     pub tp: f32,
     pub deviation: u32,
@@ -45,6 +43,17 @@ pub struct Order {
     pub comment: String,
     pub position: u32,
     pub position_by: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FilledOrder {
+    pub magic: u32,
+    pub ticket: u32,
+    pub symbol: Symbol,
+    pub volume: f32,
+    pub open_price: f32,
+    pub sl: f32,
+    pub tp: f32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -196,7 +205,7 @@ impl Default for Order {
             ticket: 0,
             symbol: Symbol::default(),
             volume: 0.01,
-            price: 0.0,
+            open_price: 0.0,
             sl: 500.0,
             tp: 500.0,
             deviation: 0,
@@ -236,7 +245,7 @@ impl From<&OrderRequest> for Order {
             ticket: todo!(),
             symbol: todo!(),
             volume: todo!(),
-            price: todo!(),
+            open_price: todo!(),
             sl: todo!(),
             tp: todo!(),
             deviation: todo!(),
@@ -303,17 +312,17 @@ impl Order {
             }
         }
 
-        let mut new_order = Order::default();
-        new_order.order_type = order_request.order_type;
-        new_order.symbol = order_request.symbol;
-        new_order.price = price;
-        new_order.sl = sl;
-        new_order.tp = tp;
-        new_order.comment = comment;
-        new_order.volume = volume;
-        new_order.magic = magic;
-
-        new_order
+        Order {
+            order_type: order_request.order_type,
+            symbol: order_request.symbol,
+            open_price: price,
+            sl,
+            tp,
+            comment,
+            volume,
+            magic,
+            ..Default::default()
+        }
     }
     fn calc_pip_value(symbol: &Symbol, account_curr: &str) -> f32 {
         let pip_value: f32;
@@ -407,7 +416,8 @@ impl Order {
                 todo!()
             }
         }
-        todo!()
+        "Success".to_string()
+        // todo!()
     }
 
     fn calculate_pips(symbol: &Symbol) -> u32 {

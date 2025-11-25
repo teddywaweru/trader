@@ -55,9 +55,8 @@ void OpenNewTrade(MqlTradeRequest &request, string& zmq_ret)
       return;
      }
 
-   zmq_ret += " 'ticket': " + (string)request.order + ", " + "'magic': " + (string)request.magic + ", 'symbol':{";
-   GetSymbolData(zmq_ret, PositionGetSymbol((uint)request.order));
-   zmq_ret += "}";
+   zmq_ret += " 'ticket': " + (string)request.order + ", " + "'magic': " + (string)request.magic + ",";
+   GetSymbol(zmq_ret, PositionGetSymbol((uint)request.order));
 
    zmq_ret += ", 'volume': " + (string)request.volume + ", 'trade_type': "+ (string)request.type;
    zmq_ret += ", 'open_price': " + (string)request.price + ", 'open_time': '"+ (string)request.type_time + "'";

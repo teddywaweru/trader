@@ -3,8 +3,15 @@
 // Tick values
 // Account Info
 use crate::{
-    account::Account, error::Mt5Error, ohlc::OHLC, order::Order, sockets::ConnectionSockets,
-    symbol::Symbol, tick::HistoricalTickData, timeframe::Timeframe, trade::OpenTrade,
+    account::Account,
+    error::Mt5Error,
+    ohlc::OHLC,
+    order::{FilledOrder, Order},
+    sockets::ConnectionSockets,
+    symbol::Symbol,
+    tick::HistoricalTickData,
+    timeframe::Timeframe,
+    trade::OpenTrade,
     HistoricalTickDataRequest,
 };
 // use crate::{
@@ -21,13 +28,13 @@ pub struct Mt5Bridge {
 
 // Execute Operations
 impl Mt5Bridge {
-    pub fn request_order(order: &Order) -> Result<Order, Box<dyn std::error::Error>> {
+    pub fn request_order(order: &Order) -> Result<FilledOrder, Box<dyn std::error::Error>> {
         let bridge = Self::init();
         let data = format!(
             "TRADE;OPEN;{:#?};{};{};{};{};{};{:.02};{};{},{:#?}",
             order.order_type as u8,
             order.symbol.name,
-            order.price,
+            order.open_price,
             order.sl,
             order.tp,
             order.comment,
@@ -163,8 +170,8 @@ impl Mt5Bridge {
         symbols
     }
     fn parse_get_symbol_data(&self, data: &str) -> Symbol {
-        let mut data = self.sanitize_mt5_response(&data);
-        let data = data.remove("symbol_data").unwrap();
+        let mut data = self.sanitize_mt5_response(data);
+        let data = data.remove("symbol").unwrap();
         serde_json::from_value::<Symbol>(data).unwrap()
     }
     fn parse_historical_tick_data(&self, data: &str) -> HistoricalTickData {
@@ -177,28 +184,22 @@ impl Mt5Bridge {
             ticks: serde_json::from_value::<Vec<OHLC>>(ticks).unwrap(),
         }
     }
-    fn parse_order_data(&self, response: &str) -> Result<Order, Box<dyn std::error::Error>> {
+    fn parse_order_data(&self, response: &str) -> Result<FilledOrder, Box<dyn std::error::Error>> {
         let mut response = self.sanitize_mt5_response(response);
         let response = response
             .remove("result")
-            .expect(format!("No  'result' Value from MT5: {:?}", response).as_str());
+            .ok_or(Mt5Error::from_mt5_response(
+                "No result value in response found during parsing",
+            ))?;
+        let filled_order =
+            serde_json::from_value::<FilledOrder>(response.clone()).map_err(|e| {
+                Mt5Error::new(
+                    &format!("Unable to serde_json parse response \n {response:#?}"),
+                    e,
+                )
+            })?;
+        Ok(filled_order)
 
-        match serde_json::from_value::<Order>(response.clone()) {
-            Ok(r) => {
-                return Ok(r);
-            }
-            Err(err) => {
-                match serde_json::from_value::<Mt5Error>(response) {
-                    Ok(r) => {
-                        return Err(Box::new(r));
-                    }
-                    Err(r) => {
-                        return Err(Box::new(err));
-                        // return Err(Box::new(Mt5Error::new("Unable to Parse Response into Order, or Mt5Error. Likely serde_json error",err)));
-                    }
-                }
-            }
-        };
     }
     fn parse_open_trades(
         &self,

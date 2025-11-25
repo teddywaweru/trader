@@ -6,6 +6,14 @@ pub struct Mt5Error {
     error_retcode: u32,
     error_message: String,
 }
+impl Default for Mt5Error {
+    fn default() -> Self {
+        Self {
+            error_retcode: 0000000,
+            error_message: "".to_string(),
+        }
+    }
+}
 impl std::fmt::Display for Mt5Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
@@ -27,8 +35,11 @@ impl std::error::Error for Mt5Error {
     // fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
 }
 impl Mt5Error {
-    fn from_mt5_response(data: String) -> Self {
-        todo!()
+    pub fn from_mt5_response(error_message: &str) -> Self {
+        Self {
+            error_message: error_message.to_string(),
+            ..Default::default()
+        }
     }
     pub fn check_if_mt5_error(data: &str) {
         use serde_json::{Map, Value};
@@ -53,7 +64,7 @@ impl Mt5Error {
     {
         Self {
             error_retcode: 000000,
-            error_message: format!("{}\n {}", context, error),
+            error_message: format!("{context}\n. Error Context: {error}"),
         }
     }
 }

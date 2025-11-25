@@ -75,7 +75,7 @@ string InterpretZmqMessage(Socket &pSocket, string &compArray[])
          Print("Getting Symbol Data");
 
          zmq_ret = "{'action': 'GET_SYMBOL_DATA',";
-         GetSymbolData(zmq_ret, compArray[2]);
+         GetSymbol(zmq_ret, compArray[2]);
          zmq_ret += "}";
 
          break;
@@ -219,9 +219,9 @@ void GetSymbols(string &zmq_ret)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void GetSymbolData(string &zmq_ret, string &symbol)
+void GetSymbol(string &zmq_ret, string &symbol)
   {
-   zmq_ret += "'symbol_data': {";
+   zmq_ret += "'symbol': {";
    zmq_ret += "'name':'" + symbol + "'";
    zmq_ret += ", 'sector':'" + SymbolInfoString(symbol, SYMBOL_SECTOR_NAME) + "'";
    zmq_ret += ", 'spread':" + (string)SymbolInfoInteger(symbol, SYMBOL_SPREAD);

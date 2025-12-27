@@ -1,0 +1,10 @@
+// mod test_widget;
+pub mod calculator;
+pub mod chart;
+pub mod counter;
+pub mod currencies;
+pub mod account;
+pub mod risk;
+pub mod news;
+pub mod opentrades;
+pub mod totals;

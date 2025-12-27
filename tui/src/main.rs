@@ -4,7 +4,7 @@ use std::io;
 
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
-    layout::{Constraint, Direction},
+    layout::{Constraint, Direction, Flex},
     prelude::{Buffer, Layout, Rect},
     style::Stylize,
     symbols::border,
@@ -12,28 +12,23 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
     DefaultTerminal, Frame,
 };
-mod calculator;
-mod chart;
-mod counter;
-mod currencies;
-mod account;
-mod risk;
-mod news;
-mod opentrades;
+mod keys;
+mod widgets;
+use keys::handle_key_event;
+use widgets::{
+    account::AccountWidget, calculator::CalculatorWidget, chart::ChartWidget,
+    counter::CounterWidget, currencies::CurrencyWidget, news::NewsWidget,
+    opentrades::OpenTradesWidget, risk::RiskWidget, totals::TotalsWidget,
+};
 
-use calculator::CalculatorWidget;
-use chart::ChartWidget;
-use counter::CounterWidget;
-use currencies::CurrencyWidget;
-use account::AccountWidget;
-use risk::RiskWidget;
-use news::NewsWidget;
-use opentrades::OpenTradesWidget;
+#[derive(Debug, Default)]
+pub struct State {}
 
 #[derive(Debug, Default)]
 pub struct App {
     counter: u8,
     exit: bool,
+    state: State,
 }
 
 impl App {
@@ -63,23 +58,37 @@ impl App {
 
         // Account Details && Horizontal Rest
         let constraints = vec![Constraint::Percentage(10), Constraint::Percentage(90)];
-        let layout = Layout::default().direction(Direction::Vertical).constraints(constraints).split(frame.area());
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .split(frame.area());
         let account_details_area = layout[0];
 
-        // Open Trades & Vertical Rest
+        // Open Trades,Totals & Vertical Rest
         let constraints = vec![Constraint::Percentage(30), Constraint::Percentage(70)];
         let layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(constraints)
             .split(layout[1]);
+        let open_trades_totals_area = layout[0];
+        let vertical_rest_area = layout[1];
+
+        // Open Trades & Totals
+        let constraints = vec![Constraint::Percentage(40), Constraint::Percentage(50)];
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(constraints)
+            .flex(Flex::Start)
+            .split(open_trades_totals_area);
         let open_trades_area = layout[0];
+        let totals_area = layout[1];
 
         // Chart Area, News & Horizontal Rest
         let constraints = vec![Constraint::Percentage(70), Constraint::Percentage(30)];
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(constraints)
-            .split(layout[1]);
+            .split(vertical_rest_area);
         let chart_news_area = layout[0];
         let risk_calculator_area = layout[1];
 
@@ -109,8 +118,10 @@ impl App {
         // Prep the Widgets to be built
 
         //Render Widgets
+        let open_trades = mt5::OpenTrade::get_all("mt5");
         frame.render_widget(AccountWidget::default(), account_details_area);
-        frame.render_widget(OpenTradesWidget::default(), open_trades_area);
+        frame.render_widget(OpenTradesWidget::new(open_trades), open_trades_area);
+        frame.render_widget(TotalsWidget::default(), totals_area);
         frame.render_widget(ChartWidget::default(), chart_area);
         frame.render_widget(NewsWidget::default(), news_area);
         frame.render_widget(RiskWidget::default(), risk_area);
@@ -119,7 +130,8 @@ impl App {
     fn handle_events(&mut self) -> std::io::Result<()> {
         match event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                self.handle_key_event(key_event);
+                handle_key_event(self, key_event);
+                // self.handle_key_event(key_event);
             }
             _ => {}
         }
@@ -128,7 +140,7 @@ impl App {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Left => self.decrement_counter(),
+            KeyCode::Left => self.execute(),
             KeyCode::Right => self.increment_counter(),
             KeyCode::Char('C') => self.app_page(key_event.code),
             // KeyCode::Char('r') => CalculatorWidget::
@@ -142,7 +154,8 @@ impl App {
         self.exit = true;
     }
 
-    fn decrement_counter(&mut self) {
+    fn execute(&mut self) {
+        self.exit = true;
         self.counter -= 1;
     }
     fn increment_counter(&mut self) {

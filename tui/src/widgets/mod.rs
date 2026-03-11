@@ -8,3 +8,4 @@ pub mod risk;
 pub mod news;
 pub mod opentrades;
 pub mod totals;
+pub mod execute;

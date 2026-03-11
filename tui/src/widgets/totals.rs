@@ -39,7 +39,8 @@ impl Widget for TotalsWidget {
                 );
             }
             Err(e) => {
-                todo!()
+                Span::styled(format!("No Trades to show here"), Style::default().fg(Color::Red));
+                // todo!()
             }
         }
         Paragraph::new(totals_text)

@@ -55,7 +55,9 @@ impl CalculatorWidget {
     pub fn execute(symbol_name: &str) {
         //FIX: Source of mt5 bridge string?
         // FIX: Should not be loading this data twice... both in render and execution
-        let account = mt5::Account::get_account_info();
+        let mut account = mt5::Account::get_account_info();
+        account.current_balance = 99967.84;
+        account.leverage = 30;
         let bridge = "mt5";
         let symbols = Symbol::get_all(bridge);
 
@@ -69,24 +71,19 @@ impl CalculatorWidget {
 
         let atr = (algo::calculate_atr(ticks) / symbol.point / 10.0) as u32;
 
-        let orders = vec![
+        let mut orders: Vec<Order> = vec![];
+        for _ in 0..1 {
+            orders.push(
             Order::new_order(OrderRequest {
                 account: account.clone(),
                 // FIX: Can't have references to mt5?
-                order_type: mt5::OrderType::Buy,
+                order_type: mt5::OrderType::Sell,
                 symbol: symbol.clone(),
-                risk: 0.001,
+                risk: 0.01,
                 limit: Some(atr),
-            }),
-            Order::new_order(OrderRequest {
-                account,
-                // FIX: Can't have references to mt5?
-                order_type: mt5::OrderType::Buy,
-                symbol: symbol.clone(),
-                risk: 0.001,
-                limit: Some(atr),
-            }),
-        ];
+            }))
+
+        }
 
         orders
             .iter()

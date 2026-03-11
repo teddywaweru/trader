@@ -18,7 +18,7 @@ use keys::handle_key_event;
 use widgets::{
     account::AccountWidget, calculator::CalculatorWidget, chart::ChartWidget,
     counter::CounterWidget, currencies::CurrencyWidget, news::NewsWidget,
-    opentrades::OpenTradesWidget, risk::RiskWidget, totals::TotalsWidget,
+    opentrades::OpenTradesWidget, risk::RiskWidget, totals::TotalsWidget,execute::ExecuteWidget
 };
 
 #[derive(Debug, Default)]
@@ -108,7 +108,16 @@ impl App {
             .constraints(constraints)
             .split(risk_calculator_area);
         let risk_area = layout[0];
-        let calculator_area = layout[1];
+        let calculator_execute_area = layout[1];
+
+        // Calculator & Execute
+        let constraints = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
+        let layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(constraints)
+            .split(calculator_execute_area);
+        let calculator_area = layout[0];
+        let execute_area = layout[1];
 
         let mut rects: Vec<Rect> = vec![Rect::default(); 5];
         // rects.insert(0, account_details_area);
@@ -126,6 +135,7 @@ impl App {
         frame.render_widget(NewsWidget::default(), news_area);
         frame.render_widget(RiskWidget::default(), risk_area);
         frame.render_widget(CalculatorWidget::default(), calculator_area);
+        frame.render_widget(ExecuteWidget::default(), execute_area);
     }
     fn handle_events(&mut self) -> std::io::Result<()> {
         match event::read()? {
@@ -138,16 +148,16 @@ impl App {
         Ok(())
     }
     fn handle_key_event(&mut self, key_event: KeyEvent) {
-        match key_event.code {
-            KeyCode::Char('q') => self.exit(),
-            KeyCode::Left => self.execute(),
-            KeyCode::Right => self.increment_counter(),
-            KeyCode::Char('C') => self.app_page(key_event.code),
-            // KeyCode::Char('r') => CalculatorWidget::
-            // KeyCode::Char('j') => frame.kkkkk
-            KeyCode::Null => {}
-            _ => {}
-        }
+        // match key_event.code {
+        //     KeyCode::Char('q') => self.exit(),
+        //     KeyCode::Left => self.execute(),
+        //     KeyCode::Right => self.increment_counter(),
+        //     KeyCode::Char('C') => self.app_page(key_event.code),
+        //     // KeyCode::Char('r') => CalculatorWidget::
+        //     // KeyCode::Char('j') => frame.kkkkk
+        //     KeyCode::Null => {}
+        //     _ => {}
+        // }
     }
 
     fn exit(&mut self) {
